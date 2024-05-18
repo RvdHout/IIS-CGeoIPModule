@@ -15,11 +15,7 @@
 #include "IPFunctions.h"
 #include <Windows.h>
 #include <chrono>
-#include <iphlpapi.h>
 #include <cstring>
-
-#pragma comment(lib, "Iphlpapi.lib")
-
 
 BOOL IPFunctions::IsIpv4InSubnet(DWORD ip, DWORD subnet, DWORD mask)
 {
@@ -57,6 +53,7 @@ VOID IPFunctions::GenerateIpv6Mask(int prefixLength, struct in6_addr* mask)
 /// 172.16.0.0/12
 /// 127.0.0.0/8
 /// fe80::/10
+/// fc00::/7
 /// ::1/128
 /// </summary>
 /// <param name="pSockAddr"></param>
