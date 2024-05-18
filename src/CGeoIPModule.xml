@@ -1,0 +1,23 @@
+<!-- 
+Dont forget to add an entry in applicationHost.config...
+     ...
+        <sectionGroup name="system.webServer">
+            <section name="CGeoIPModule" />
+	 ...
+
+-->
+
+
+<configSchema>
+    <sectionSchema name="system.webServer/CGeoIPModule">
+        <attribute name="enabled" type="bool" defaultValue="false"/>
+        <attribute name="path" type="string" defaultValue=""/>
+        <attribute name="allowListed" type="bool" defaultValue="true"/>
+        <attribute name="action" type="string" defaultValue="Forbidden"/>
+		<element name="CountryCodes">
+			<collection addElement="add" removeElement="remove" clearElement="clear">
+				<attribute name="code" type="string" defaultValue="--" />
+			</collection>
+		</element>
+    </sectionSchema>
+</configSchema>

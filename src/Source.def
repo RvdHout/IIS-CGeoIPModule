@@ -1,0 +1,4 @@
+LIBRARY CGeoIPModule
+
+EXPORTS
+	RegisterModule
