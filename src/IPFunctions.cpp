@@ -14,11 +14,7 @@
 #include <httpserv.h>
 #include "IPFunctions.h"
 #include <Windows.h>
-
- // IPv6 functions and date
 #include <chrono>
-
-// IPv6 functions
 #include <iphlpapi.h>
 #include <cstring>
 
@@ -30,7 +26,6 @@ BOOL IPFunctions::IsIpv4InSubnet(DWORD ip, DWORD subnet, DWORD mask)
     return (ip & mask) == (subnet & mask);
 }
 
-// Function to compare IPv6 addresses
 BOOL IPFunctions::IsIpv6InSubnet(struct in6_addr* addr, struct in6_addr* subnet, struct in6_addr* mask)
 {
     for (int i = 0; i < 16; ++i) {
@@ -83,7 +78,7 @@ BOOL IPFunctions::IsLocalAddress(PSOCKADDR pSockAddr) {
             {"127.0.0.0", "255.0.0.0"}
         };
 
-        // Check each local subnet
+        // Check each local subnets
         for (const auto& net : ipv4_local_subnets) {
             struct in_addr ipv4_subnet = { 0 }, ipv4_mask = { 0 };
             inet_pton(AF_INET, net.subnet, &ipv4_subnet);
