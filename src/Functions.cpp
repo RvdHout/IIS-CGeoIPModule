@@ -18,12 +18,6 @@
 // IPv6 functions and date
 #include <chrono>
 
-// IPv6 functions
-#include <iphlpapi.h>
-#include <cstring>
-
-#pragma comment(lib, "Iphlpapi.lib")
-
 #define ELEMENT L"system.webServer/CGeoIPModule"
 
 HRESULT Functions::GetConfig(IHttpContext* pHttpContext, IAppHostElement** ppElement)
