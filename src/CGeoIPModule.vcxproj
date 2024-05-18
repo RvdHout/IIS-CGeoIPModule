@@ -127,15 +127,10 @@
       <ModuleDefinitionFile>Source.def</ModuleDefinitionFile>
     </Link>
     <PreBuildEvent>
-      <Command>net stop w3svc
-taskkill /im w3wp.exe /F 2&gt;nul 1&gt;nul
-exit 0</Command>
+      <Command></Command>
     </PreBuildEvent>
     <PostBuildEvent>
-      <Command>net start w3svc 2&gt;nul 1&gt;nul
-curl [2605:59c8:2629:6700:b900:42a1:c35:4200] 2&gt;nul 1&gt;nul
-exit 0
-</Command>
+      <Command></Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
