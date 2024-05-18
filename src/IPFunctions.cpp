@@ -103,6 +103,14 @@ BOOL IPFunctions::IsLocalAddress(PSOCKADDR pSockAddr) {
             return TRUE;
         }
 
+        ipv6_subnet = {}, ipv6_mask = {};
+        // Check for link-local address (fc00::/7)
+        inet_pton(AF_INET6, "fc00::", &ipv6_subnet);
+        GenerateIpv6Mask(7, &ipv6_mask);
+        if (IsIpv6InSubnet(&sockaddr_in6->sin6_addr, &ipv6_subnet, &ipv6_mask)) {
+            return TRUE;
+        }
+
         // Check for IPv6 localhost (::1)
         struct in6_addr ipv6_localhost = {};
         inet_pton(AF_INET6, "::1", &ipv6_localhost);
