@@ -13,11 +13,12 @@
 class IPFunctions
 {
 public:
-    BOOL IsIpv4InSubnet(DWORD ip, DWORD subnet, DWORD mask);
+    BOOL IsLocalAddress(PSOCKADDR pSockAddr);
 
+private:
     VOID GenerateIpv6Mask(int prefixLength, struct in6_addr* mask);
 
     BOOL IsIpv6InSubnet(struct in6_addr* addr, struct in6_addr* subnet, struct in6_addr* mask);
 
-    BOOL IsLocalAddress(PSOCKADDR pSockAddr);
+    BOOL IsIpv4InSubnet(DWORD ip, DWORD subnet, DWORD mask);
 };
