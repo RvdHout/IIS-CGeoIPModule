@@ -27,10 +27,6 @@ action options
  - `Unauthorized`
  - `Reset`
  
-mode options
- - `block`
- - `allow`
- 
 Server variable `GEOIP_COUNTRY` will contain the iso country code on successful lookup, `ZZ` for local addresses as defined by the `IsLocalAddress()` function or `--` for unsuccessful lookups
 
 example usage `web.config` to block one country
