@@ -11,7 +11,7 @@
  */
 #define WIN32_LEAN_AND_MEAN
 #include "pch.h"
-#include <httpserv.h>
+#include <ws2tcpip.h>
 #include "IPFunctions.h"
 #include <Windows.h>
 #include <chrono>
