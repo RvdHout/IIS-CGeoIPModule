@@ -12,7 +12,11 @@
 ```
         <sectionGroup name="system.webServer">
 ```
-and add `<section name="CGeoIPModule" />` 
+and add `<section name="CGeoIPModule" />`
+
+copy `CGeoIPModule.dll` to `%windir%\System32\inetsrv`
+
+install via IIS dialogs (Server->Modules->Configure Native Modules->Register)
 
 ## Usage
 
