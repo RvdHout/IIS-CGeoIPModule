@@ -25,7 +25,7 @@ BOOL IPFunctions::IsIpv4InSubnet(DWORD ip, DWORD subnet, DWORD mask)
 BOOL IPFunctions::IsIpv6InSubnet(struct in6_addr* addr, struct in6_addr* subnet, struct in6_addr* mask)
 {
     for (int i = 0; i < 16; ++i) {
-        if ((addr->s6_addr[i] & mask->s6_addr[i]) != subnet->s6_addr[i]) {
+        if ((addr->s6_addr[i] & mask->s6_addr[i]) != (subnet->s6_addr[i] & mask->s6_addr[i])) {
             return FALSE;
         }
     }
