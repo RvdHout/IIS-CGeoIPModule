@@ -69,8 +69,9 @@ public:
             HRESULT hr = GetCountryCode(pSockAddr, mmdbPath, countryCode);
             delete[] mmdbPath;
         }
-
-        pHttpContext->SetServerVariable("GEOIP_COUNTRY", myFunctions.convertCharArrayToLPCWSTR(countryCode, 3));
+        LPCWSTR wCountryCode = myFunctions.convertCharArrayToLPCWSTR(countryCode, 3);
+        pHttpContext->SetServerVariable("GEOIP_COUNTRY", wCountryCode);
+        delete[] wCountryCode;
 
         // check the retrieved country code
         if (CheckCountryCode(pHttpContext, countryCode, mode)) {

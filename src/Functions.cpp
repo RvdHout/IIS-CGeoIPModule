@@ -14,8 +14,6 @@
 #include <httpserv.h>
 #include "Functions.h"
 #include <Windows.h>
-
-// IPv6 functions and date
 #include <chrono>
 
 #define ELEMENT L"system.webServer/CGeoIPModule"
