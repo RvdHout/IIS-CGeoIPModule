@@ -22,8 +22,6 @@ public:
 
     VOID DenyAction(IHttpContext* pHttpContext);
 
-    BOOL IsLocalAddress(PSOCKADDR pSockAddr);
-
     CHAR* PSOCKADDRtoString(PSOCKADDR pSockAddr);
 
     BOOL GetAllowMode(IHttpContext* pW3Context);
