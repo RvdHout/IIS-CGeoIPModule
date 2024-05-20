@@ -38,11 +38,4 @@ public:
     static VOID WriteFileLogMessage(const char* szMsg);
 #endif
 
-private:
-    BOOL IsIpv4InSubnet(DWORD ip, DWORD subnet, DWORD mask);
-
-    VOID GenerateIpv6Mask(int prefixLength, struct in6_addr* mask);
-
-    BOOL IsIpv6InSubnet(struct in6_addr* addr, struct in6_addr* subnet, struct in6_addr* mask);
-
 };
