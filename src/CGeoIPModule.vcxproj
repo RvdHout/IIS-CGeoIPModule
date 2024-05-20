@@ -122,15 +122,17 @@
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
-      <AdditionalDependencies>maxminddb.lib;OleAut32.lib;Advapi32.lib</AdditionalDependencies>
+      <AdditionalDependencies>maxminddb.lib;OleAut32.lib</AdditionalDependencies>
       <AdditionalLibraryDirectories>C:\Program Files %28x86%29\maxminddb\lib</AdditionalLibraryDirectories>
       <ModuleDefinitionFile>Source.def</ModuleDefinitionFile>
     </Link>
     <PreBuildEvent>
-      <Command></Command>
+      <Command>
+      </Command>
     </PreBuildEvent>
     <PostBuildEvent>
-      <Command></Command>
+      <Command>
+      </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -153,7 +155,7 @@
       <EnableUAC>false</EnableUAC>
       <ModuleDefinitionFile>Source.def</ModuleDefinitionFile>
       <AdditionalLibraryDirectories>C:\Program Files %28x86%29\maxminddb\lib</AdditionalLibraryDirectories>
-      <AdditionalDependencies>maxminddb.lib;OleAut32.lib;Advapi32.lib</AdditionalDependencies>
+      <AdditionalDependencies>maxminddb.lib;OleAut32.lib</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
