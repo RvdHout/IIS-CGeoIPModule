@@ -84,4 +84,4 @@ cmake --build . --config Release --target install
 ## Reason for this modules existence
 I have been using the [GeoIP2blockModule](https://github.com/RvdHout/IIS-GeoIP2block-Module) for several years, and while its a well written solution, it is a bit slower (probably due to the introduction of asp.net into the request pipeline)
 
-This module has very little impact on IIS's performance, making it more suitable to sites that see heavy load. Though it does lack a nice UI in IIS manager
+This module has much lower impact on IIS's performance, making it more suitable to sites that see heavy load. Though it does lack a nice UI in IIS manager
