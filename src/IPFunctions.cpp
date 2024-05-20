@@ -11,7 +11,7 @@
  */
 #define WIN32_LEAN_AND_MEAN
 #include "pch.h"
-#include <ws2tcpip.h>
+#include <WS2tcpip.h>
 #include "IPFunctions.h"
 #include <Windows.h>
 #include <chrono>
@@ -101,7 +101,7 @@ BOOL IPFunctions::IsLocalAddress(PSOCKADDR pSockAddr) {
         }
 
         ipv6_subnet = {}, ipv6_mask = {};
-        // Check for link-local address (fc00::/7)
+        // Check for unique local address (fc00::/7)
         inet_pton(AF_INET6, "fc00::", &ipv6_subnet);
         GenerateIpv6Mask(7, &ipv6_mask);
         if (IsIpv6InSubnet(&sockaddr_in6->sin6_addr, &ipv6_subnet, &ipv6_mask)) {
