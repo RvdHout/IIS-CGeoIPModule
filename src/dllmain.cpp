@@ -87,7 +87,7 @@ public:
             myFunctions.DenyAction(pHttpContext);
             reqStatus = RQ_NOTIFICATION_FINISH_REQUEST;
         }
-
+        
         return reqStatus;
     }
 
@@ -207,31 +207,27 @@ private:
         )
     {
         Functions myFunctions;
-        BOOL modeswitch = TRUE;
+#ifdef _DEBUG
         if (MODE == FALSE) {
-#ifdef _DEBUG
             myFunctions.WriteFileLogMessage("mode=block listed");
-#endif
-            modeswitch = FALSE;
         }
-#ifdef _DEBUG
         else {
             myFunctions.WriteFileLogMessage("mode=allow listed");
         }
 #endif
-        BOOL check = modeswitch ? FALSE : TRUE;
+        BOOL modeswitch = MODE ? FALSE : TRUE;
 #pragma warning( disable : 4267 )
         int wslen = MultiByteToWideChar(CP_ACP, 0, COUNTRYCODE, strlen(COUNTRYCODE), 0, 0);
         BSTR bstrCountryCode = SysAllocStringLen(0, wslen);
         MultiByteToWideChar(CP_ACP, 0, COUNTRYCODE, strlen(COUNTRYCODE), bstrCountryCode, wslen);
 #pragma warning( default : 4267 )
         if (myFunctions.IsCountryCodeListed(pHttpContext, bstrCountryCode)) {
-            check = modeswitch ?  TRUE : FALSE;
+            modeswitch = MODE ?  TRUE : FALSE;
         }
 
         SysFreeString(bstrCountryCode);
 
-        return check;
+        return modeswitch;
     }
 };
 

@@ -338,19 +338,17 @@ BOOL Functions::GetIsEnabled(IHttpContext* pHttpContext)
 /// <returns></returns>
 VOID Functions::DenyAction(IHttpContext* pHttpContext)
 {
-    // Default mode
-    const wchar_t* mode = L"Forbidden";
+    const wchar_t* mode = L"Close";
 
     IAppHostElement* pElement = NULL;
-    HRESULT hr = GetConfig(pHttpContext, &pElement); // Pass the desired section name
+    HRESULT hr = GetConfig(pHttpContext, &pElement);
     if (SUCCEEDED(hr))
     {
         BSTR bstrAction = SysAllocString(L"action");
         BSTR modeBstr = NULL;
 
-        // Retrieve the mode value from the configuration
         hr = GetStringPropertyValueFromElement(pElement, bstrAction, &modeBstr);
-        pElement->Release(); // Release the retrieved element
+        pElement->Release();
         SysFreeString(bstrAction);
 
         if (SUCCEEDED(hr) && modeBstr != NULL)
@@ -361,7 +359,7 @@ VOID Functions::DenyAction(IHttpContext* pHttpContext)
     }
 
     IHttpResponse* pHttpResponse = pHttpContext->GetResponse();
-    if (wcscmp(mode, L"Abort\0") == 0)
+    if (wcscmp(mode, L"Close\0") == 0)
     {
         pHttpResponse->CloseConnection();
     }
@@ -394,6 +392,23 @@ VOID Functions::DenyAction(IHttpContext* pHttpContext)
     }
 }
 
+wchar_t* Functions::convertCharArrayToLPCWSTR(const char* charArray, int length)
+{
+    wchar_t* wString = new wchar_t[length];
+    MultiByteToWideChar(CP_ACP, 0, charArray, -1, wString, length);
+    return wString;
+}
+
+char* Functions::BSTRToCharArray(BSTR bstr)
+{
+    int length = WideCharToMultiByte(CP_UTF8, 0, bstr, -1, NULL, 0, NULL, NULL);
+    char* charArray = new char[length];
+    WideCharToMultiByte(CP_UTF8, 0, bstr, -1, charArray, length, NULL, NULL);
+    return charArray;
+}
+
+#ifdef _DEBUG
+
 CHAR* Functions::PSOCKADDRtoString(PSOCKADDR pSockAddr)
 {
     CHAR* string = nullptr;
@@ -416,21 +431,6 @@ CHAR* Functions::PSOCKADDRtoString(PSOCKADDR pSockAddr)
     return string;
 }
 
-wchar_t* Functions::convertCharArrayToLPCWSTR(const char* charArray, int length)
-{
-    wchar_t* wString = new wchar_t[length];
-    MultiByteToWideChar(CP_ACP, 0, charArray, -1, wString, length);
-    return wString;
-}
-
-char* Functions::BSTRToCharArray(BSTR bstr)
-{
-    int length = WideCharToMultiByte(CP_UTF8, 0, bstr, -1, NULL, 0, NULL, NULL);
-    char* charArray = new char[length];
-    WideCharToMultiByte(CP_UTF8, 0, bstr, -1, charArray, length, NULL, NULL);
-    return charArray;
-}
-
 char* Functions::FormatStringPSOCKADDR(const char* message, PSOCKADDR pSockAddr)
 {
     CHAR* ipstring = PSOCKADDRtoString(pSockAddr);
@@ -447,7 +447,6 @@ char* Functions::FormatStringPSOCKADDR(const char* message, PSOCKADDR pSockAddr)
  *
  */
 
-#ifdef _DEBUG
 VOID Functions::WriteFileLogMessage(const char* szMsg)
 {
     HANDLE hFile = CreateFileA("C:/folder/Module.log", GENERIC_WRITE, 0, NULL, OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
@@ -471,4 +470,5 @@ VOID Functions::WriteFileLogMessage(const char* szMsg)
     }
     return;
 }
+
 #endif

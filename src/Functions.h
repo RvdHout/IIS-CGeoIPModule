@@ -22,8 +22,6 @@ public:
 
     VOID DenyAction(IHttpContext* pHttpContext);
 
-    CHAR* PSOCKADDRtoString(PSOCKADDR pSockAddr);
-
     BOOL GetAllowMode(IHttpContext* pW3Context);
 
     wchar_t* convertCharArrayToLPCWSTR(const char* charArray, int length);
@@ -32,9 +30,11 @@ public:
 
     static HRESULT GetConfig(IHttpContext* pHttpContext, IAppHostElement** ppElement);
 
+#ifdef _DEBUG
+    CHAR* PSOCKADDRtoString(PSOCKADDR pSockAddr);
+
     char* FormatStringPSOCKADDR(const char* string, PSOCKADDR pSockAddr);
 
-#ifdef _DEBUG
     static VOID WriteFileLogMessage(const char* szMsg);
 #endif
 

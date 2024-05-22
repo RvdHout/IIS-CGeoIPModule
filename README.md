@@ -9,7 +9,7 @@
 
 - edit `%windir%\System32\inetsrv\config\applicationHost.config` and find the line
 
-```
+```xml
         <sectionGroup name="system.webServer">
 ```
 and add `<section name="CGeoIPModule" />`
@@ -22,7 +22,7 @@ install via IIS dialogs (Server->Modules->Configure Native Modules->Register)
 
 action options
  - `Not Found`
- - `Abort`
+ - `Close`
  - `Forbidden`
  - `Unauthorized`
  - `Reset`
@@ -85,3 +85,39 @@ cmake --build . --config Release --target install
 I have been using the [GeoIP2blockModule](https://github.com/RvdHout/IIS-GeoIP2block-Module) for several years, and while its a well written solution, it is a bit slower (probably due to the introduction of asp.net into the request pipeline)
 
 This module has much lower impact on IIS's performance, making it more suitable to sites that see heavy load. Though it does lack a nice UI in IIS manager
+
+## Bombardier results
+1.39 KB static file for testing (small to emphasize transactional throughput)
+
+No module enabled
+```
+Statistics        Avg      Stdev        Max
+  Reqs/sec     13327.21    6434.57   31616.04
+  Latency        9.37ms     2.08ms    53.62ms
+  HTTP codes:
+    1xx - 0, 2xx - 133322, 3xx - 0, 4xx - 0, 5xx - 0
+    others - 0
+  Throughput:    22.34MB/s
+```
+
+C# module
+```
+Statistics        Avg      Stdev        Max
+  Reqs/sec       842.83     144.49    1301.78
+  Latency      147.69ms    10.07ms   252.26ms
+  HTTP codes:
+    1xx - 0, 2xx - 8518, 3xx - 0, 4xx - 0, 5xx - 0
+    others - 0
+  Throughput:     1.41MB/s
+```
+
+C++ module
+```
+Statistics        Avg      Stdev        Max
+  Reqs/sec      5507.09    1081.12   16498.01
+  Latency       22.77ms     2.33ms   113.10ms
+  HTTP codes:
+    1xx - 0, 2xx - 54745, 3xx - 0, 4xx - 0, 5xx - 0
+    others - 0
+  Throughput:     9.17MB/s
+```
