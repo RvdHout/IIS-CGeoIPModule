@@ -12,40 +12,48 @@
 #include <vector>
 #include <string>
 #include <httpserv.h>
+#include <maxminddb.h>
 #ifdef _DEBUG
 #include <atlstr.h>
 #endif
 #include "RulesStruct.h"
+
+#pragma comment(lib, "WS2_32")
+#pragma comment(lib, "maxminddb.lib")
 
 extern IHttpServer* g_pHttpServer;
 
 class Functions
 {
 public:
-    BOOL IsCountryCodeListed(IHttpContext* pHttpContext, BSTR CountryCode);
+    static HRESULT GetConfig(IN IHttpContext* pHttpContext, OUT IAppHostElement** ppElement);
 
-    BOOL GetIsEnabled(IHttpContext* pW3Context);
+    BOOL IsCountryCodeListed(IN IHttpContext* pHttpContext, IN BSTR CountryCode);
 
-    CHAR* GetMMDBPath(IHttpContext* pW3Context);
+    BOOL GetIsEnabled(IN IHttpContext* pW3Context);
 
-    VOID DenyAction(IHttpContext* pHttpContext);
+    CHAR* GetMMDBPath(IN IHttpContext* pW3Context);
 
-    BOOL GetAllowMode(IHttpContext* pW3Context);
+    HRESULT GetCountryCode(IN PSOCKADDR IP, IN CHAR* MMDB_PATH, OUT CHAR* COUNTRYCODE);
 
-    wchar_t* convertCharArrayToLPCWSTR(const char* charArray, int length);
+    BOOL CheckCountryCode(IN IHttpContext* pHttpContext, IN CHAR* COUNTRYCODE, IN BOOL MODE);
 
-    char* BSTRToCharArray(BSTR bstr);
+    VOID DenyAction(IN IHttpContext* pHttpContext);
 
-    static HRESULT GetConfig(IHttpContext* pHttpContext, IAppHostElement** ppElement);
+    BOOL GetAllowMode(IN IHttpContext* pW3Context);
 
-    std::vector<ExceptionRules> exceptionRules(IHttpContext* pHttpContext, PSOCKADDR pAddress);
+    wchar_t* convertCharArrayToLPCWSTR(IN const char* charArray, IN int length);
+
+    char* BSTRToCharArray(IN BSTR bstr);
+
+    std::vector<ExceptionRules> exceptionRules(IN IHttpContext* pHttpContext, IN PSOCKADDR pAddress);
 
 #ifdef _DEBUG
-    CHAR* PSOCKADDRtoString(PSOCKADDR pSockAddr);
+    CHAR* PSOCKADDRtoString(IN PSOCKADDR pSockAddr);
 
-    char* FormatStringPSOCKADDR(const char* string, PSOCKADDR pSockAddr);
+    char* FormatStringPSOCKADDR(IN const char* string, IN PSOCKADDR pSockAddr);
 
-    static VOID WriteFileLogMessage(const char* szMsg);
+    static VOID WriteFileLogMessage(IN const char* szMsg);
 #endif
 
 };

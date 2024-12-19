@@ -21,7 +21,7 @@
 
 #define ELEMENT L"system.webServer/CGeoIPModule"
 
-HRESULT Functions::GetConfig(IHttpContext* pHttpContext, IAppHostElement** ppElement)
+HRESULT Functions::GetConfig(IN IHttpContext* pHttpContext, OUT IAppHostElement** ppElement)
 {
     HRESULT hr = S_OK;
     IAppHostAdminManager* pAdminManager = NULL;
@@ -183,7 +183,7 @@ GetBooleanPropertyValueFromElement(
     return hr;
 }
 
-BOOL Functions::IsCountryCodeListed(IHttpContext* pHttpContext, BSTR CountryCode)
+BOOL Functions::IsCountryCodeListed(IN IHttpContext* pHttpContext, IN BSTR CountryCode)
 {
     BOOL Allowed = FALSE;
     IAppHostElement* pModuleElement = NULL;
@@ -191,6 +191,12 @@ BOOL Functions::IsCountryCodeListed(IHttpContext* pHttpContext, BSTR CountryCode
     HRESULT hr = GetConfig(pHttpContext, &pModuleElement);
     if (FAILED(hr))
     {
+#ifdef _DEBUG
+        WriteFileLogMessage("[Functions::IsCountryCodeListed]: GetConfig failed");
+        _com_error err(hr);
+        LPCTSTR errMsg = err.ErrorMessage();
+        WriteFileLogMessage(CStringA(errMsg));
+#endif
         return Allowed;
     }
 
@@ -201,6 +207,12 @@ BOOL Functions::IsCountryCodeListed(IHttpContext* pHttpContext, BSTR CountryCode
     pModuleElement->Release();
     if (FAILED(hr) || pCountryCodesElement == NULL)
     {
+#ifdef _DEBUG
+        WriteFileLogMessage("[Functions::IsCountryCodeListed]: GetElementByName failed");
+        _com_error err(hr);
+        LPCTSTR errMsg = err.ErrorMessage();
+        WriteFileLogMessage(CStringA(errMsg));
+#endif
         return Allowed;
     }
 
@@ -210,6 +222,12 @@ BOOL Functions::IsCountryCodeListed(IHttpContext* pHttpContext, BSTR CountryCode
     pCountryCodesElement->Release();
     if (FAILED(hr) || pCollection == NULL)
     {
+#ifdef _DEBUG
+        WriteFileLogMessage("[Functions::IsCountryCodeListed]: get_Collection failed");
+        _com_error err(hr);
+        LPCTSTR errMsg = err.ErrorMessage();
+        WriteFileLogMessage(CStringA(errMsg));
+#endif
         return Allowed;
     }
 
@@ -217,6 +235,12 @@ BOOL Functions::IsCountryCodeListed(IHttpContext* pHttpContext, BSTR CountryCode
     hr = pCollection->get_Count(&count);
     if (FAILED(hr))
     {
+#ifdef _DEBUG
+        WriteFileLogMessage("[Functions::IsCountryCodeListed]: get_Count failed");
+        _com_error err(hr);
+        LPCTSTR errMsg = err.ErrorMessage();
+        WriteFileLogMessage(CStringA(errMsg));
+#endif
         pCollection->Release();
         return Allowed;
     }
@@ -233,6 +257,12 @@ BOOL Functions::IsCountryCodeListed(IHttpContext* pHttpContext, BSTR CountryCode
         hr = pCollection->get_Item(varIndex, &pElement);
         if (FAILED(hr) || pElement == NULL)
         {
+#ifdef _DEBUG
+            WriteFileLogMessage("[Functions::IsCountryCodeListed]: get_Item failed");
+            _com_error err(hr);
+            LPCTSTR errMsg = err.ErrorMessage();
+            WriteFileLogMessage(CStringA(errMsg));
+#endif
             continue; // Move to the next element
         }
 
@@ -240,6 +270,12 @@ BOOL Functions::IsCountryCodeListed(IHttpContext* pHttpContext, BSTR CountryCode
         hr = pElement->get_Name(&bstrElementName);
         if (FAILED(hr) || bstrElementName == NULL)
         {
+#ifdef _DEBUG
+            WriteFileLogMessage("[Functions::IsCountryCodeListed]: get_Name failed");
+            _com_error err(hr);
+            LPCTSTR errMsg = err.ErrorMessage();
+            WriteFileLogMessage(CStringA(errMsg));
+#endif
             pElement->Release();
             continue; // Move to the next element
         }
@@ -252,17 +288,26 @@ BOOL Functions::IsCountryCodeListed(IHttpContext* pHttpContext, BSTR CountryCode
             BSTR bstr = SysAllocString(L"code");
             hr = GetStringPropertyValueFromElement(pElement, bstr, &bstrCountryCode);
             SysFreeString(bstr);
-            if (SUCCEEDED(hr) && bstrCountryCode != NULL)
+
+            if (FAILED(hr) || bstrCountryCode == NULL)
             {
-                if (wcscmp(CountryCode, bstrCountryCode) == 0)
-                {
 #ifdef _DEBUG
-                    WriteFileLogMessage("Found country code in config");
+                WriteFileLogMessage("[Functions::IsCountryCodeListed]: GetStringPropertyValueFromElement failed");
+                _com_error err(hr);
+                LPCTSTR errMsg = err.ErrorMessage();
+                WriteFileLogMessage(CStringA(errMsg));
 #endif
-                    Allowed = TRUE;
-                    SysFreeString(bstrCountryCode);
-                    break;
-                }
+                return Allowed;
+            }
+
+            if (wcscmp(CountryCode, bstrCountryCode) == 0)
+            {
+#ifdef _DEBUG
+                WriteFileLogMessage("Found country code in config");
+#endif
+                Allowed = TRUE;
+                SysFreeString(bstrCountryCode);
+                break;
             }
             SysFreeString(bstrCountryCode);
         }
@@ -276,22 +321,191 @@ BOOL Functions::IsCountryCodeListed(IHttpContext* pHttpContext, BSTR CountryCode
     return Allowed;
 }
 
-
-CHAR* Functions::GetMMDBPath(IHttpContext* pW3Context)
+/// <summary>
+/// Gets the MMDB path from config, else nullptr
+/// </summary>
+/// <param name="pW3Context"></param>
+/// <returns>Pointer to path</returns>
+CHAR* Functions::GetMMDBPath(IN IHttpContext* pW3Context)
 {
     BSTR bstr = NULL;
     IAppHostElement* pElement = NULL;
     HRESULT hr = GetConfig(pW3Context, &pElement);
-    if (SUCCEEDED(hr))
+    if (FAILED(hr))
     {
-        BSTR path = SysAllocString(L"path");
-        hr = GetStringPropertyValueFromElement(pElement, path, &bstr);
-        pElement->Release();
-        SysFreeString(path);
+#ifdef _DEBUG
+        WriteFileLogMessage("[Functions::GetMMDBPath]: GetConfig failed");
+        _com_error err(hr);
+        LPCTSTR errMsg = err.ErrorMessage();
+        WriteFileLogMessage(CStringA(errMsg));
+#endif
+        return nullptr;
     }
+
+    BSTR bstrPath = SysAllocString(L"path");
+    if (bstrPath == NULL)
+    {
+        pElement->Release();
+        return nullptr;
+    }
+
+    hr = GetStringPropertyValueFromElement(pElement, bstrPath, &bstr);
+    SysFreeString(bstrPath);
+    if (FAILED(hr))
+    {
+#ifdef _DEBUG
+        WriteFileLogMessage("[Functions::GetMMDBPath]: GetStringPropertyValueFromElement failed");
+        _com_error err(hr);
+        LPCTSTR errMsg = err.ErrorMessage();
+        WriteFileLogMessage(CStringA(errMsg));
+#endif
+        pElement->Release();
+        return nullptr;
+    }
+
     CHAR* path = BSTRToCharArray(bstr);
     SysFreeString(bstr);
-    return path;
+    pElement->Release();
+
+    return path; // Caller must free this memory
+}
+
+/// <summary>
+/// Gets the country code for an IP address
+/// </summary>
+/// <param name="IP">The clients PSOCKADDR</param>
+/// <param name="MMDB_PATH">Path of mmdb file</param>
+/// <param name="COUNTRYCODE">pointer with country code of ip</param>
+/// <returns></returns>
+HRESULT Functions::GetCountryCode(IN PSOCKADDR IP, IN CHAR* MMDB_PATH, OUT CHAR* COUNTRYCODE)
+{
+#ifdef _DEBUG
+    Functions myFunctions;
+    char* message = myFunctions.FormatStringPSOCKADDR("Client address is", IP);
+    myFunctions.WriteFileLogMessage(message);
+    delete[] message;
+#endif
+    MMDB_entry_data_s entry_data;
+    MMDB_s mmdb;
+    int mmdb_error;
+    // open db
+    int status = MMDB_open(MMDB_PATH, MMDB_MODE_MMAP, &mmdb);
+    // check it
+    if (MMDB_SUCCESS != status) {
+#ifdef _DEBUG
+        myFunctions.WriteFileLogMessage(MMDB_strerror(status));
+#endif
+        strcpy_s(COUNTRYCODE, 3, "--");
+        MMDB_close(&mmdb);
+        return E_UNEXPECTED;
+    }
+    // perform lookup
+    MMDB_lookup_result_s result = MMDB_lookup_sockaddr(&mmdb, IP, &mmdb_error);
+    // check it
+    if (MMDB_SUCCESS != mmdb_error) {
+#ifdef _DEBUG
+        myFunctions.WriteFileLogMessage(MMDB_strerror(mmdb_error));
+#endif
+        strcpy_s(COUNTRYCODE, 3, "--");
+        MMDB_close(&mmdb);
+        return E_UNEXPECTED;
+    }
+
+    if (result.found_entry) {
+        // get values
+        int getValueResult = MMDB_get_value(&result.entry, &entry_data, "country", "iso_code", NULL);
+        // sanity check
+        if (!entry_data.has_data || entry_data.type != MMDB_DATA_TYPE_UTF8_STRING) {
+#ifdef _DEBUG
+            myFunctions.WriteFileLogMessage("No string data");
+#endif
+            strcpy_s(COUNTRYCODE, 3, "--");
+            MMDB_close(&mmdb);
+            return E_UNEXPECTED;
+        }
+
+        if (getValueResult == MMDB_SUCCESS) {
+            // buffer for the country code
+            char cc[3];
+            int sprintf_countrycode = 0;
+            int sprintf_debugmessage = 0;
+            sprintf_countrycode = sprintf_s(cc, sizeof(cc), "%.*s", entry_data.data_size, entry_data.utf8_string);
+#ifdef _DEBUG
+            char string[16];
+            sprintf_debugmessage = sprintf_s(string, sizeof(string), "country code %.*s", entry_data.data_size, entry_data.utf8_string);
+#endif
+            if (sprintf_debugmessage < 0 || sprintf_countrycode < 0) {
+#ifdef _DEBUG
+                char* message = myFunctions.FormatStringPSOCKADDR("Error formatting country code", IP);
+                myFunctions.WriteFileLogMessage(message);
+                delete[] message;
+#endif
+                strcpy_s(COUNTRYCODE, 3, "--");
+                MMDB_close(&mmdb);
+                return E_UNEXPECTED;
+            }
+            else {
+#ifdef _DEBUG
+                myFunctions.WriteFileLogMessage(string);
+#endif
+                strcpy_s(COUNTRYCODE, 3, cc);
+                MMDB_close(&mmdb);
+                return S_OK;
+            }
+        }
+        else {
+#ifdef _DEBUG
+            char* message = myFunctions.FormatStringPSOCKADDR("MMDB_get_value failed", IP);
+            myFunctions.WriteFileLogMessage(message);
+            delete[] message;
+#endif
+            strcpy_s(COUNTRYCODE, 3, "--");
+        }
+    }
+    else {
+#ifdef _DEBUG
+        char* message = myFunctions.FormatStringPSOCKADDR("no entry in database for", IP);
+        myFunctions.WriteFileLogMessage(message);
+        delete[] message;
+#endif
+        strcpy_s(COUNTRYCODE, 3, "--");
+    }
+    MMDB_close(&mmdb);
+    return E_FAIL;
+}
+
+
+/// <summary>
+/// Check country code returned by GetCountryCode
+/// </summary>
+/// <param name="pHttpContext">Context</param>
+/// <param name="COUNTRYCODE">The country code of an IP</param>
+/// <param name="MODE">mode switch</param>
+/// <returns></returns>
+BOOL Functions::CheckCountryCode(IN IHttpContext* pHttpContext, IN CHAR* COUNTRYCODE, IN BOOL MODE)
+{
+    Functions myFunctions;
+#ifdef _DEBUG
+    if (MODE == FALSE) {
+        myFunctions.WriteFileLogMessage("mode=block listed");
+    }
+    else {
+        myFunctions.WriteFileLogMessage("mode=allow listed");
+    }
+#endif
+    BOOL modeswitch = MODE ? FALSE : TRUE;
+#pragma warning( disable : 4267 )
+    int wslen = MultiByteToWideChar(CP_ACP, 0, COUNTRYCODE, strlen(COUNTRYCODE), 0, 0);
+    BSTR bstrCountryCode = SysAllocStringLen(0, wslen);
+    MultiByteToWideChar(CP_ACP, 0, COUNTRYCODE, strlen(COUNTRYCODE), bstrCountryCode, wslen);
+#pragma warning( default : 4267 )
+    if (myFunctions.IsCountryCodeListed(pHttpContext, bstrCountryCode)) {
+        modeswitch = MODE ? TRUE : FALSE;
+    }
+
+    SysFreeString(bstrCountryCode);
+
+    return modeswitch;
 }
 
 /// <summary>
@@ -299,7 +513,7 @@ CHAR* Functions::GetMMDBPath(IHttpContext* pW3Context)
 /// </summary>
 /// <param name="pHttpContext"></param>
 /// <returns></returns>
-BOOL Functions::GetAllowMode(IHttpContext* pHttpContext)
+BOOL Functions::GetAllowMode(IN IHttpContext* pHttpContext)
 {
     BOOL mode = FALSE;
     IAppHostElement* pElement = NULL;
@@ -314,70 +528,127 @@ BOOL Functions::GetAllowMode(IHttpContext* pHttpContext)
     return mode;
 }
 
-BOOL Functions::GetIsEnabled(IHttpContext* pHttpContext)
+BOOL Functions::GetIsEnabled(IN IHttpContext* pHttpContext)
 {
     BOOL isEnabled = FALSE;
     IAppHostElement* pElement = NULL;
     HRESULT hr = GetConfig(pHttpContext, &pElement);
-    if (SUCCEEDED(hr))
+    if (FAILED(hr))
     {
-        BSTR bstrEnabled = SysAllocString(L"enabled");
-        hr = GetBooleanPropertyValueFromElement(pElement, bstrEnabled, &isEnabled);
-        pElement->Release();
-        SysFreeString(bstrEnabled);
+#ifdef _DEBUG
+        WriteFileLogMessage("[Functions::GetIsEnabled]: GetConfig failed");
+        _com_error err(hr);
+        LPCTSTR errMsg = err.ErrorMessage();
+        WriteFileLogMessage(CStringA(errMsg));
+#endif
+        return FALSE;
     }
+
+    BSTR bstrEnabled = SysAllocString(L"enabled");
+    if (bstrEnabled == NULL)
+    {
+#ifdef _DEBUG
+        WriteFileLogMessage("[Functions::GetIsEnabled]: bstrEnabled alloc failed");
+        _com_error err(hr);
+        LPCTSTR errMsg = err.ErrorMessage();
+        WriteFileLogMessage(CStringA(errMsg));
+#endif
+        pElement->Release();
+        return FALSE;
+    }
+
+    hr = GetBooleanPropertyValueFromElement(pElement, bstrEnabled, &isEnabled);
+    SysFreeString(bstrEnabled);
+    if (FAILED(hr))
+    {
+#ifdef _DEBUG
+        WriteFileLogMessage("[Functions::GetIsEnabled]: GetBooleanPropertyValueFromElement failed");
+        _com_error err(hr);
+        LPCTSTR errMsg = err.ErrorMessage();
+        WriteFileLogMessage(CStringA(errMsg));
+#endif
+    }
+    pElement->Release();
     return isEnabled;
 }
 
 /// <summary>
-/// pick deny response
+/// pick deny response, default to Close on failure
 /// </summary>
 /// <param name="pHttpContext"></param>
 /// <returns></returns>
-VOID Functions::DenyAction(IHttpContext* pHttpContext)
+VOID Functions::DenyAction(IN IHttpContext* pHttpContext)
 {
-    const wchar_t* mode = L"Close";
+    const wchar_t* mode = L"Close"; // Default response on failure
 
     IAppHostElement* pElement = NULL;
     HRESULT hr = GetConfig(pHttpContext, &pElement);
     if (SUCCEEDED(hr))
     {
         BSTR bstrAction = SysAllocString(L"action");
-        BSTR modeBstr = NULL;
-
-        hr = GetStringPropertyValueFromElement(pElement, bstrAction, &modeBstr);
-        pElement->Release();
-        SysFreeString(bstrAction);
-
-        if (SUCCEEDED(hr) && modeBstr != NULL)
+        if (bstrAction != NULL)
         {
-            mode = modeBstr;
-            SysFreeString(modeBstr);
+            BSTR modeBstr = NULL;
+            hr = GetStringPropertyValueFromElement(pElement, bstrAction, &modeBstr);
+            SysFreeString(bstrAction);
+            pElement->Release();
+
+            if (SUCCEEDED(hr) && modeBstr != NULL)
+            {
+                mode = modeBstr; // Use retrieved action
+                SysFreeString(modeBstr);
+            }
+#ifdef _DEBUG
+            else
+            {
+                WriteFileLogMessage("[Functions::DenyAction]: Failed to retrieve 'action' property");
+                _com_error err(hr);
+                LPCTSTR errMsg = err.ErrorMessage();
+                WriteFileLogMessage(CStringA(errMsg));
+            }
+#endif
+        }
+        else
+        {
+#ifdef _DEBUG
+            WriteFileLogMessage("[Functions::DenyAction]: SysAllocString for 'action' failed");
+#endif
+            pElement->Release();
         }
     }
+#ifdef _DEBUG
+    else
+    {
+        WriteFileLogMessage("[Functions::DenyAction]: GetConfig failed");
+        _com_error err(hr);
+        LPCTSTR errMsg = err.ErrorMessage();
+        WriteFileLogMessage(CStringA(errMsg));
+    }
+#endif
 
+    // Respond based on the mode
     IHttpResponse* pHttpResponse = pHttpContext->GetResponse();
-    if (wcscmp(mode, L"Close\0") == 0)
+    if (wcscmp(mode, L"Close") == 0)
     {
         pHttpResponse->CloseConnection();
     }
-    else if (wcscmp(mode, L"Not Found\0") == 0)
+    else if (wcscmp(mode, L"Not Found") == 0)
     {
         pHttpResponse->SetStatus(404, "Not Found");
     }
-    else if (wcscmp(mode, L"Forbidden\0") == 0)
+    else if (wcscmp(mode, L"Forbidden") == 0)
     {
         pHttpResponse->SetStatus(403, "Forbidden");
     }
-    else if (wcscmp(mode, L"Unauthorized\0") == 0)
+    else if (wcscmp(mode, L"Unauthorized") == 0)
     {
         pHttpResponse->SetStatus(401, "Unauthorized");
     }
-    else if (wcscmp(mode, L"Reset\0") == 0)
+    else if (wcscmp(mode, L"Reset") == 0)
     {
         pHttpResponse->ResetConnection();
     }
-    else if (wcscmp(mode, L"Teapot\0") == 0)
+    else if (wcscmp(mode, L"Teapot") == 0)
     {
         pHttpResponse->SetStatus(418, "I'm a teapot");
     }
@@ -385,18 +656,21 @@ VOID Functions::DenyAction(IHttpContext* pHttpContext)
     {
         pHttpResponse->CloseConnection();
 #ifdef _DEBUG
-        WriteFileLogMessage("Action not recognised");
+        WriteFileLogMessage("[Functions::DenyAction]: Action not recognized, defaulting to 'Close'");
 #endif
     }
 }
 
-std::vector<ExceptionRules> Functions::exceptionRules(IHttpContext* pHttpContext, PSOCKADDR pAddress) {
+std::vector<ExceptionRules> Functions::exceptionRules(IN IHttpContext* pHttpContext, IN PSOCKADDR pAddress) {
     std::vector<ExceptionRules> rules;
     IAppHostElement* pModuleElement = NULL;
     HRESULT hr = GetConfig(pHttpContext, &pModuleElement);
     if (FAILED(hr)) {
 #ifdef _DEBUG
         WriteFileLogMessage("[Functions::exceptionRules]: GetConfig failed");
+        _com_error err(hr);
+        LPCTSTR errMsg = err.ErrorMessage();
+        WriteFileLogMessage(CStringA(errMsg));
 #endif
         return rules;
     }
@@ -410,6 +684,9 @@ std::vector<ExceptionRules> Functions::exceptionRules(IHttpContext* pHttpContext
     if (FAILED(hr) || pAddressElement == NULL) {
 #ifdef _DEBUG
         WriteFileLogMessage("[Functions::exceptionRules]: GetElementByName failed");
+        _com_error err(hr);
+        LPCTSTR errMsg = err.ErrorMessage();
+        WriteFileLogMessage(CStringA(errMsg));
 #endif
         return rules;
     }
@@ -421,6 +698,9 @@ std::vector<ExceptionRules> Functions::exceptionRules(IHttpContext* pHttpContext
     if (FAILED(hr) || pCollection == NULL) {
 #ifdef _DEBUG
         WriteFileLogMessage("[Functions::exceptionRules]: get_Collection failed");
+        _com_error err(hr);
+        LPCTSTR errMsg = err.ErrorMessage();
+        WriteFileLogMessage(CStringA(errMsg));
 #endif
         return rules;
     }
@@ -430,6 +710,9 @@ std::vector<ExceptionRules> Functions::exceptionRules(IHttpContext* pHttpContext
     if (FAILED(hr)) {
 #ifdef _DEBUG
         WriteFileLogMessage("[Functions::exceptionRules]: get_Count failed");
+        _com_error err(hr);
+        LPCTSTR errMsg = err.ErrorMessage();
+        WriteFileLogMessage(CStringA(errMsg));
 #endif
         pCollection->Release();
         return rules;
@@ -446,6 +729,9 @@ std::vector<ExceptionRules> Functions::exceptionRules(IHttpContext* pHttpContext
         if (FAILED(hr) || pElement == NULL) {
 #ifdef _DEBUG
             WriteFileLogMessage("[Functions::exceptionRules]: get_Item failed");
+            _com_error err(hr);
+            LPCTSTR errMsg = err.ErrorMessage();
+            WriteFileLogMessage(CStringA(errMsg));
 #endif
             continue;
         }
@@ -455,6 +741,9 @@ std::vector<ExceptionRules> Functions::exceptionRules(IHttpContext* pHttpContext
         if (FAILED(hr) || bstrElementName == NULL) {
 #ifdef _DEBUG
             WriteFileLogMessage("[Functions::exceptionRules]: get_Name failed");
+            _com_error err(hr);
+            LPCTSTR errMsg = err.ErrorMessage();
+            WriteFileLogMessage(CStringA(errMsg));
 #endif
             pElement->Release();
             continue;
@@ -469,6 +758,9 @@ std::vector<ExceptionRules> Functions::exceptionRules(IHttpContext* pHttpContext
             if (FAILED(hr) || bstrFamily == NULL) {
 #ifdef _DEBUG
                 WriteFileLogMessage("[Functions::exceptionRules]: GetStringPropertyValueFromElement failed (family)");
+                _com_error err(hr);
+                LPCTSTR errMsg = err.ErrorMessage();
+                WriteFileLogMessage(CStringA(errMsg));
 #endif
                 pElement->Release();
                 continue;
@@ -551,14 +843,14 @@ std::vector<ExceptionRules> Functions::exceptionRules(IHttpContext* pHttpContext
     return rules;
 }
 
-wchar_t* Functions::convertCharArrayToLPCWSTR(const char* charArray, int length)
+wchar_t* Functions::convertCharArrayToLPCWSTR(IN const char* charArray, IN int length)
 {
     wchar_t* wString = new wchar_t[length];
     MultiByteToWideChar(CP_ACP, 0, charArray, -1, wString, length);
     return wString;
 }
 
-char* Functions::BSTRToCharArray(BSTR bstr)
+char* Functions::BSTRToCharArray(IN BSTR bstr)
 {
     int length = WideCharToMultiByte(CP_UTF8, 0, bstr, -1, NULL, 0, NULL, NULL);
     char* charArray = new char[length];
@@ -568,7 +860,7 @@ char* Functions::BSTRToCharArray(BSTR bstr)
 
 #ifdef _DEBUG
 
-CHAR* Functions::PSOCKADDRtoString(PSOCKADDR pSockAddr)
+CHAR* Functions::PSOCKADDRtoString(IN PSOCKADDR pSockAddr)
 {
     CHAR* string = nullptr;
     if (pSockAddr->sa_family == AF_INET) {
@@ -590,7 +882,7 @@ CHAR* Functions::PSOCKADDRtoString(PSOCKADDR pSockAddr)
     return string;
 }
 
-char* Functions::FormatStringPSOCKADDR(const char* message, PSOCKADDR pSockAddr)
+char* Functions::FormatStringPSOCKADDR(IN const char* message, IN PSOCKADDR pSockAddr)
 {
     CHAR* ipstring = PSOCKADDRtoString(pSockAddr);
     size_t len = strlen(message) + strlen(ipstring) + 2; // 1 for space and 1 for null terminator
@@ -606,7 +898,7 @@ char* Functions::FormatStringPSOCKADDR(const char* message, PSOCKADDR pSockAddr)
  *
  */
 
-VOID Functions::WriteFileLogMessage(const char* szMsg)
+VOID Functions::WriteFileLogMessage(IN const char* szMsg)
 {
     // Get system drive letter
     char* sysDrive = nullptr;
