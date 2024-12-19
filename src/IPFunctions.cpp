@@ -9,13 +9,9 @@
  *                                               __/ |  \____/
  *                                              |___/
  */
-#define WIN32_LEAN_AND_MEAN
 #include "pch.h"
-#include <WS2tcpip.h>
 #include "IPFunctions.h"
 #include <Windows.h>
-#include <chrono>
-#include <cstring>
 
 BOOL IPFunctions::IsIpv4InSubnet(DWORD ip, DWORD subnet, DWORD mask)
 {

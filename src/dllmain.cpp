@@ -37,7 +37,8 @@ public:
         Functions myFunctions;
         IPFunctions ipFunctions;
 
-        if (!myFunctions.GetIsEnabled(pHttpContext)) {
+        if (!myFunctions.GetIsEnabled(pHttpContext))
+        {
 #ifdef _DEBUG
             myFunctions.WriteFileLogMessage("Module disabled");
 #endif
@@ -48,8 +49,10 @@ public:
         const std::vector<ExceptionRules> rules = myFunctions.exceptionRules(pHttpContext, pSockAddr);
         // check exception rules
         BOOL allowed = FALSE;
-        if (ipFunctions.isIpInExceptionRules(pSockAddr, rules, &allowed)) {
-            if (allowed) {
+        if (ipFunctions.isIpInExceptionRules(pSockAddr, rules, &allowed))
+        {
+            if (allowed)
+            {
 #ifdef _DEBUG
                 myFunctions.WriteFileLogMessage("IP allowed by exception rule");
 #endif
@@ -71,7 +74,8 @@ public:
 
         CHAR countryCode[3] = { '\0' }; // Buffer to store the country code (2 characters + null terminator)
 
-        if (ipFunctions.IsLocalAddress(pSockAddr)) {
+        if (ipFunctions.IsLocalAddress(pSockAddr))
+        {
 #ifdef _DEBUG
             myFunctions.WriteFileLogMessage("address is local");
 #endif
@@ -82,7 +86,8 @@ public:
         REQUEST_NOTIFICATION_STATUS reqStatus;
 
         // Get country code for this address, if it has not been set
-        if (countryCode[0] == '\0') {
+        if (countryCode[0] == '\0')
+        {
             CHAR* mmdbPath = myFunctions.GetMMDBPath(pHttpContext);
 #ifdef _DEBUG
             myFunctions.WriteFileLogMessage(mmdbPath);
@@ -95,7 +100,8 @@ public:
         delete[] wCountryCode;
 
         // check the retrieved country code
-        if (myFunctions.CheckCountryCode(pHttpContext, countryCode, mode)) {
+        if (myFunctions.CheckCountryCode(pHttpContext, countryCode, mode))
+        {
 #ifdef _DEBUG
             myFunctions.WriteFileLogMessage("CountryCode allowed");
 #endif

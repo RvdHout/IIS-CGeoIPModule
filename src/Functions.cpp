@@ -9,15 +9,9 @@
  *                                               __/ |  \____/
  *                                              |___/
  */
-#define WIN32_LEAN_AND_MEAN
 #include "pch.h"
-#include <httpserv.h>
 #include "Functions.h"
 #include <Windows.h>
-#include <chrono>
-#ifdef _DEBUG
-#include <comdef.h>
-#endif
 
 #define ELEMENT L"system.webServer/CGeoIPModule"
 
@@ -56,10 +50,7 @@ HRESULT Functions::GetConfig(IN IHttpContext* pHttpContext, OUT IAppHostElement*
     return hr;
 }
 
-HRESULT GetStringPropertyValueFromElement(
-    IAppHostElement* pElement,
-    BSTR pszElementName,
-    BSTR* pStringValue)
+HRESULT GetStringPropertyValueFromElement(IAppHostElement* pElement, BSTR pszElementName, BSTR* pStringValue)
 {
     HRESULT hr = S_OK;
     IAppHostProperty* pProperty = NULL;
@@ -123,11 +114,7 @@ HRESULT GetStringPropertyValueFromElement(
     return hr;
 }
 
-HRESULT
-GetBooleanPropertyValueFromElement(
-    IAppHostElement* pElement,
-    BSTR pszElementName,
-    BOOL* pBoolValue)
+HRESULT GetBooleanPropertyValueFromElement(IAppHostElement* pElement, BSTR pszElementName, BOOL* pBoolValue)
 {
     HRESULT hr = S_OK;
     IAppHostProperty* pProperty = NULL;
@@ -201,7 +188,7 @@ BOOL Functions::IsCountryCodeListed(IN IHttpContext* pHttpContext, IN BSTR Count
     }
 
     IAppHostElement* pCountryCodesElement = NULL;
-    BSTR bstr = SysAllocString(L"CountryCodes");
+    BSTR bstr = SysAllocString(L"countryCodes");
     hr = pModuleElement->GetElementByName(bstr, &pCountryCodesElement);
     SysFreeString(bstr);
     pModuleElement->Release();

@@ -9,11 +9,15 @@
  *                                               __/ |  \____/
  *                                              |___/
  */
+#define WIN32_LEAN_AND_MEAN
 #include <string>
 #include <vector>
 #include <cstdlib> // For atoi
 #include <stdexcept> // For std::stoi
 #include "RulesStruct.h"
+#include <chrono>
+#include <cstring>
+#include <WS2tcpip.h>
 
 class IPFunctions
 {

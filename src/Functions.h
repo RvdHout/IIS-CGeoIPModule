@@ -9,11 +9,14 @@
  *                                               __/ |  \____/
  *                                              |___/
  */
+#define WIN32_LEAN_AND_MEAN
+#include <httpserv.h>
 #include <vector>
 #include <string>
-#include <httpserv.h>
 #include <maxminddb.h>
+#include <chrono>
 #ifdef _DEBUG
+#include <comdef.h> // for _com_error
 #include <atlstr.h>
 #endif
 #include "RulesStruct.h"

@@ -14,7 +14,7 @@ Dont forget to add an entry in applicationHost.config...
         <attribute name="path" type="string" defaultValue=""/>
         <attribute name="allowListed" type="bool" defaultValue="true"/>
         <attribute name="action" type="string" defaultValue="Forbidden"/>
-		<element name="CountryCodes">
+		<element name="countryCodes">
 			<collection addElement="add" removeElement="remove" clearElement="clear">
 				<attribute name="code" type="string" defaultValue="--" />
 			</collection>
