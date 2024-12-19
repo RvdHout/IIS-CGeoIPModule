@@ -9,6 +9,14 @@
  *                                               __/ |  \____/
  *                                              |___/
  */
+#include <vector>
+#include <string>
+#include <httpserv.h>
+#ifdef _DEBUG
+#include <atlstr.h>
+#endif
+#include "RulesStruct.h"
+
 extern IHttpServer* g_pHttpServer;
 
 class Functions
@@ -29,6 +37,8 @@ public:
     char* BSTRToCharArray(BSTR bstr);
 
     static HRESULT GetConfig(IHttpContext* pHttpContext, IAppHostElement** ppElement);
+
+    std::vector<ExceptionRules> exceptionRules(IHttpContext* pHttpContext, PSOCKADDR pAddress);
 
 #ifdef _DEBUG
     CHAR* PSOCKADDRtoString(PSOCKADDR pSockAddr);

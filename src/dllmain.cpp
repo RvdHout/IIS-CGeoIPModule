@@ -16,6 +16,7 @@
 #include <windows.h>
 #include <winsock2.h>
 #include <maxminddb.h>
+#include "RulesStruct.h"
 #include "Functions.h"
 #include "IPFunctions.h"
 
@@ -47,6 +48,31 @@ public:
 #endif
             return RQ_NOTIFICATION_CONTINUE;
         }
+
+        // get exception rules from config, return only matching family
+        const std::vector<ExceptionRules> rules = myFunctions.exceptionRules(pHttpContext, pSockAddr);
+        // check exception rules
+        BOOL allowed = FALSE;
+        if (ipFunctions.isIpInExceptionRules(pSockAddr, rules, &allowed)) {
+            if (allowed) {
+#ifdef _DEBUG
+                myFunctions.WriteFileLogMessage("IP allowed by exception rule");
+#endif
+                return RQ_NOTIFICATION_CONTINUE;
+            }
+            else {
+#ifdef _DEBUG
+                myFunctions.WriteFileLogMessage("IP denied by exception rule");
+#endif
+                myFunctions.DenyAction(pHttpContext);
+                return RQ_NOTIFICATION_FINISH_REQUEST;
+            }
+        }
+#ifdef _DEBUG
+        else {
+            myFunctions.WriteFileLogMessage("No matching exception rules found for this address");
+        }
+#endif
 
         CHAR countryCode[3] = { '\0' }; // Buffer to store the country code (2 characters + null terminator)
 

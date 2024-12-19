@@ -9,23 +9,26 @@
  *                                               __/ |  \____/
  *                                              |___/
  */
+#ifndef EXCEPTION_RULES
+#define EXCEPTION_RULES
+
 #include <string>
 #include <vector>
-#include <cstdlib> // For atoi
-#include <stdexcept> // For std::stoi
-#include "RulesStruct.h"
 
-class IPFunctions
-{
-public:
-    BOOL IsLocalAddress(PSOCKADDR pSockAddr);
+struct ExceptionRules {
+    std::string family;
+    std::string address;
+    std::string mask;
+    bool mode;
 
-    BOOL isIpInExceptionRules(PSOCKADDR pSockAddr, const std::vector<ExceptionRules>& rules, BOOL* pAllowed);
+    ExceptionRules()
+        : family(""), address(""), mask(""), mode(true) {}
 
-private:
-    VOID GenerateIpv6Mask(int prefixLength, struct in6_addr* mask);
-
-    BOOL IsIpv6InSubnet(struct in6_addr* addr, struct in6_addr* subnet, struct in6_addr* mask);
-
-    BOOL IsIpv4InSubnet(DWORD ip, DWORD subnet, DWORD mask);
+    ExceptionRules(const std::string& fam, const std::string& addr, const std::string& msk, bool mod)
+        : family(fam), address(addr), mask(msk), mode(mod) {}
 };
+
+// Declare rule as an external variable
+extern ExceptionRules rule;
+
+#endif // EXCEPTION_RULES

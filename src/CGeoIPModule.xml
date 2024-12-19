@@ -19,5 +19,13 @@ Dont forget to add an entry in applicationHost.config...
 				<attribute name="code" type="string" defaultValue="--" />
 			</collection>
 		</element>
+		<element name="exceptionRules">
+			<collection addElement="add" removeElement="remove" clearElement="clear">
+				<attribute name="allow" type="bool" defaultValue="false" />
+				<attribute name="family" type="string" defaultValue="ipv4" />
+				<attribute name="address" type="string" defaultValue="" />
+				<attribute name="mask" type="string" defaultValue="" />
+			</collection>
+		</element>
     </sectionSchema>
 </configSchema>

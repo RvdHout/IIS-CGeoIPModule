@@ -117,3 +117,58 @@ BOOL IPFunctions::IsLocalAddress(PSOCKADDR pSockAddr) {
     }
     return FALSE;
 }
+
+BOOL IPFunctions::isIpInExceptionRules(PSOCKADDR pSockAddr, const std::vector<ExceptionRules>& rules, BOOL* pAllowed)
+{
+    // at this point we should have our exception rules if any,
+    // so we can loop through each rule and check if the connecting ip is within the range
+
+    for (const auto& rule : rules) {
+        const char* family = rule.family.c_str();
+        const char* address = rule.address.c_str();
+        const char* mask = rule.mask.c_str();
+        *pAllowed = rule.mode;
+
+        if (pSockAddr->sa_family == AF_INET) {
+            SOCKADDR_IN* sockaddr_in = (struct sockaddr_in*)pSockAddr;
+            DWORD clientIp = sockaddr_in->sin_addr.S_un.S_addr;
+
+            struct in_addr ipv4_subnet = { 0 }, ipv4_mask = { 0 };
+            inet_pton(AF_INET, address, &ipv4_subnet);
+            inet_pton(AF_INET, mask, &ipv4_mask);
+
+            DWORD subnet = ipv4_subnet.S_un.S_addr;
+            DWORD mask = ipv4_mask.S_un.S_addr;
+
+            if (IsIpv4InSubnet(clientIp, subnet, mask)) {
+                return TRUE;
+            }
+        }
+
+        if (pSockAddr->sa_family == AF_INET6) {
+            // Convert mask string to an integer
+            int maskInt = 0;
+            std::exception e;
+            try {
+                maskInt = std::stoi(mask);
+            }
+            catch (const std::invalid_argument& e) {
+                continue;
+            }
+            catch (const std::out_of_range& e) {
+                continue;
+            }
+
+            SOCKADDR_IN6* sockaddr_in6 = (struct sockaddr_in6*)pSockAddr;
+            struct in6_addr ipv6_subnet = {}, ipv6_mask = {};
+
+            inet_pton(AF_INET6, address, &ipv6_subnet);
+            GenerateIpv6Mask(maskInt, &ipv6_mask);
+            if (IsIpv6InSubnet(&sockaddr_in6->sin6_addr, &ipv6_subnet, &ipv6_mask)) {
+                return TRUE;
+            }
+        }
+    }
+
+    return FALSE;
+}

@@ -15,6 +15,7 @@
 #include "Functions.h"
 #include <Windows.h>
 #include <chrono>
+#include <comdef.h>
 
 #define ELEMENT L"system.webServer/CGeoIPModule"
 
@@ -168,7 +169,7 @@ GetBooleanPropertyValueFromElement(
     {
         VariantClear(&vPropertyValue);
         pProperty->Release();
-        return E_FAIL; // Value is not a string
+        return E_FAIL; // Value is not a bool
     }
 
     // Finally, get the value:
@@ -176,11 +177,6 @@ GetBooleanPropertyValueFromElement(
 
     VariantClear(&vPropertyValue);
     pProperty->Release();
-
-    if (*pBoolValue == NULL)
-    {
-        return E_OUTOFMEMORY;
-    }
 
     return hr;
 }
@@ -392,6 +388,167 @@ VOID Functions::DenyAction(IHttpContext* pHttpContext)
     }
 }
 
+std::vector<ExceptionRules> Functions::exceptionRules(IHttpContext* pHttpContext, PSOCKADDR pAddress) {
+    std::vector<ExceptionRules> rules;
+    IAppHostElement* pModuleElement = NULL;
+    HRESULT hr = GetConfig(pHttpContext, &pModuleElement);
+    if (FAILED(hr)) {
+#ifdef _DEBUG
+        WriteFileLogMessage("[Functions::exceptionRules]: GetConfig failed");
+#endif
+        return rules;
+    }
+
+    IAppHostElement* pAddressElement = NULL;
+    BSTR bstr = SysAllocString(L"exceptionRules");
+    hr = pModuleElement->GetElementByName(bstr, &pAddressElement);
+    SysFreeString(bstr);
+    pModuleElement->Release();
+
+    if (FAILED(hr) || pAddressElement == NULL) {
+#ifdef _DEBUG
+        WriteFileLogMessage("[Functions::exceptionRules]: GetElementByName failed");
+#endif
+        return rules;
+    }
+
+    IAppHostElementCollection* pCollection = NULL;
+    hr = pAddressElement->get_Collection(&pCollection);
+    pAddressElement->Release();
+
+    if (FAILED(hr) || pCollection == NULL) {
+#ifdef _DEBUG
+        WriteFileLogMessage("[Functions::exceptionRules]: get_Collection failed");
+#endif
+        return rules;
+    }
+
+    DWORD count = 0;
+    hr = pCollection->get_Count(&count);
+    if (FAILED(hr)) {
+#ifdef _DEBUG
+        WriteFileLogMessage("[Functions::exceptionRules]: get_Count failed");
+#endif
+        pCollection->Release();
+        return rules;
+    }
+
+    for (DWORD i = 0; i < count; ++i) {
+        VARIANT varIndex;
+        VariantInit(&varIndex);
+        varIndex.vt = VT_I4;
+        varIndex.lVal = i;
+
+        IAppHostElement* pElement = NULL;
+        hr = pCollection->get_Item(varIndex, &pElement);
+        if (FAILED(hr) || pElement == NULL) {
+#ifdef _DEBUG
+            WriteFileLogMessage("[Functions::exceptionRules]: get_Item failed");
+#endif
+            continue;
+        }
+
+        BSTR bstrElementName = NULL;
+        hr = pElement->get_Name(&bstrElementName);
+        if (FAILED(hr) || bstrElementName == NULL) {
+#ifdef _DEBUG
+            WriteFileLogMessage("[Functions::exceptionRules]: get_Name failed");
+#endif
+            pElement->Release();
+            continue;
+        }
+
+        if (_wcsicmp(bstrElementName, L"add") == 0) {
+            BSTR bstrFamily = NULL;
+            BSTR family = SysAllocString(L"family");
+            hr = GetStringPropertyValueFromElement(pElement, family, &bstrFamily);
+            SysFreeString(family);
+
+            if (FAILED(hr) || bstrFamily == NULL) {
+#ifdef _DEBUG
+                WriteFileLogMessage("[Functions::exceptionRules]: GetStringPropertyValueFromElement failed (family)");
+#endif
+                pElement->Release();
+                continue;
+            }
+
+            // skip elements which are not for this address family, save some resources.
+            if ((pAddress->sa_family == AF_INET && _wcsicmp(bstrFamily, L"ipv4") != 0) ||
+                (pAddress->sa_family == AF_INET6 && _wcsicmp(bstrFamily, L"ipv6") != 0)) {
+#ifdef _DEBUG
+                WriteFileLogMessage("[Functions::exceptionRules]: Skipping entry family mismatch");
+#endif
+                SysFreeString(bstrFamily);
+                pElement->Release();
+                continue;
+            }
+
+            BOOL b = NULL;
+            BSTR allow = SysAllocString(L"allow");
+            hr = GetBooleanPropertyValueFromElement(pElement, allow, &b);
+            SysFreeString(allow);
+            bool boolMode = b;
+            if (FAILED(hr)) {
+#ifdef _DEBUG
+                WriteFileLogMessage("[Functions::exceptionRules]: GetBooleanPropertyValueFromElement failed (allow)");
+                _com_error err(hr);
+                LPCTSTR errMsg = err.ErrorMessage();
+                WriteFileLogMessage(CStringA(errMsg));
+#endif
+                SysFreeString(bstrFamily);
+                pElement->Release();
+                continue;
+            }
+
+            BSTR bstrMask = NULL;
+            BSTR mask = SysAllocString(L"mask");
+            hr = GetStringPropertyValueFromElement(pElement, mask, &bstrMask);
+            SysFreeString(mask);
+
+            if (FAILED(hr) || bstrMask == NULL) {
+#ifdef _DEBUG
+                WriteFileLogMessage("[Functions::exceptionRules]: GetStringPropertyValueFromElement failed (mask)");
+#endif
+                SysFreeString(bstrFamily);
+                pElement->Release();
+                continue;
+            }
+
+            BSTR bstrAddress = NULL;
+            BSTR address = SysAllocString(L"address");
+            hr = GetStringPropertyValueFromElement(pElement, address, &bstrAddress);
+            SysFreeString(address);
+
+            if (FAILED(hr) || bstrAddress == NULL) {
+#ifdef _DEBUG
+                WriteFileLogMessage("[Functions::exceptionRules]: GetStringPropertyValueFromElement failed (address)");
+#endif
+                SysFreeString(bstrFamily);
+                SysFreeString(bstrMask);
+                pElement->Release();
+                continue;
+            }
+
+            // bstrAddress, bstrMask, bstrFamily, and mode contains config elements
+            PCSTR pcstrAddress = BSTRToCharArray(bstrAddress);
+            PCSTR pcstrMask = BSTRToCharArray(bstrMask);
+            PCSTR pcstrFamily = BSTRToCharArray(bstrFamily);
+            SysFreeString(bstrFamily);
+            SysFreeString(bstrMask);
+            SysFreeString(bstrAddress);
+
+            rules.push_back({ std::string(pcstrFamily), std::string(pcstrAddress), std::string(pcstrMask), boolMode });
+
+        }
+
+        SysFreeString(bstrElementName);
+        pElement->Release();
+    }
+
+    pCollection->Release();
+    return rules;
+}
+
 wchar_t* Functions::convertCharArrayToLPCWSTR(const char* charArray, int length)
 {
     wchar_t* wString = new wchar_t[length];
@@ -443,13 +600,30 @@ char* Functions::FormatStringPSOCKADDR(const char* message, PSOCKADDR pSockAddr)
 
 /**
  *
- * Logging functions
+ * Debug logging function
  *
  */
 
 VOID Functions::WriteFileLogMessage(const char* szMsg)
 {
-    HANDLE hFile = CreateFileA("C:/folder/Module.log", GENERIC_WRITE, 0, NULL, OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+    // Get system drive letter
+    char* sysDrive = nullptr;
+    size_t len = 0;
+    if (_dupenv_s(&sysDrive, &len, "SystemDrive") != 0 || sysDrive == nullptr) {
+        return;
+    }
+
+    // Construct path
+    char path[MAX_PATH] = { 0 };
+    snprintf(path, sizeof(path), "%s/inetpub/logs/CGeoIPDebugLog/Module.log", sysDrive);
+
+    free(sysDrive);
+
+    // Open file for writing
+    HANDLE hFile = CreateFileA(path, GENERIC_WRITE, 0, NULL, OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+    if (hFile == INVALID_HANDLE_VALUE) {
+        return;
+    }
 
     // date
     std::time_t currentTime = std::time(nullptr);
@@ -458,17 +632,13 @@ VOID Functions::WriteFileLogMessage(const char* szMsg)
     localtime_s(&localTime, &currentTime);
     std::strftime(buffer, sizeof(buffer), "%Y-%m-%d %H:%M:%S", &localTime);
 
-    if (INVALID_HANDLE_VALUE != hFile)
-    {
-        DWORD dwWritten;
-        SetFilePointer(hFile, 0, NULL, FILE_END);
-        WriteFile(hFile, buffer, (DWORD)strlen(buffer), &dwWritten, NULL);
-        WriteFile(hFile, " ", 1, &dwWritten, NULL);
-        WriteFile(hFile, szMsg, (DWORD)strlen(szMsg), &dwWritten, NULL);
-        WriteFile(hFile, "\r\n", 2, &dwWritten, NULL);
-        CloseHandle(hFile);
-    }
+    DWORD dwWritten;
+    SetFilePointer(hFile, 0, NULL, FILE_END);
+    WriteFile(hFile, buffer, (DWORD)strlen(buffer), &dwWritten, NULL);
+    WriteFile(hFile, " ", 1, &dwWritten, NULL);
+    WriteFile(hFile, szMsg, (DWORD)strlen(szMsg), &dwWritten, NULL);
+    WriteFile(hFile, "\r\n", 2, &dwWritten, NULL);
+    CloseHandle(hFile);
     return;
 }
-
 #endif
