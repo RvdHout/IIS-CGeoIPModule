@@ -15,7 +15,9 @@
 #include "Functions.h"
 #include <Windows.h>
 #include <chrono>
+#ifdef _DEBUG
 #include <comdef.h>
+#endif
 
 #define ELEMENT L"system.webServer/CGeoIPModule"
 
