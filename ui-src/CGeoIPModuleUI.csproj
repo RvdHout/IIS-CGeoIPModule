@@ -1,0 +1,156 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{6FDF6411-6224-4CD7-A5E5-7F539DEF72CD}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>CGeoIPModule</RootNamespace>
+    <AssemblyName>CGeoIPModuleUI</AssemblyName>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <Deterministic>true</Deterministic>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>5</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup>
+    <Nullable>enable</Nullable>
+    <LangVersion>8.0</LangVersion>
+  </PropertyGroup>
+  <PropertyGroup>
+    <SignAssembly>true</SignAssembly>
+  </PropertyGroup>
+  <PropertyGroup>
+    <AssemblyOriginatorKeyFile>CGeoIPModule.snk</AssemblyOriginatorKeyFile>
+  </PropertyGroup>
+  <PropertyGroup>
+    <StartupObject />
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Microsoft.Web.Administration, Version=10.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\..\..\Windows\System32\inetsrv\Microsoft.Web.Administration.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Web.Management, Version=7.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\..\..\Windows\System32\inetsrv\Microsoft.Web.Management.dll</HintPath>
+    </Reference>
+    <Reference Include="Newtonsoft.Json, Version=13.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.13.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Numerics" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="AddExceptionRuleForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="AddExceptionRuleForm.Designer.cs">
+      <DependentUpon>AddExceptionRuleForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="AddExceptionRuleTaskList.cs" />
+    <Compile Include="Countries.cs" />
+    <Compile Include="GeoblockConfiguration.cs" />
+    <Compile Include="GeoblockConfigurationSection.cs" />
+    <Compile Include="GeoblockModule.cs" />
+    <Compile Include="GeoblockModuleDialogPage.cs" />
+    <Compile Include="GeoblockModuleProvider.cs" />
+    <Compile Include="GeoblockModuleService.cs" />
+    <Compile Include="GeoblockModuleServiceProxy.cs" />
+    <Compile Include="IPAddressRange\Bits.cs" />
+    <Compile Include="IPAddressRange\Internals\IPAddressExtensions.cs" />
+    <Compile Include="IPAddressRange\Internals\IPv4RangeOperator.cs" />
+    <Compile Include="IPAddressRange\Internals\IPv6RangeOperator.cs" />
+    <Compile Include="IPAddressRange\Internals\IRangeOperator.cs" />
+    <Compile Include="IPAddressRange\Internals\RangeOperatorFactory.cs" />
+    <Compile Include="IPAddressRange\IPAddressRange.cs" />
+    <Compile Include="IPUtilities.cs" />
+    <Compile Include="MaxMind.Db\ArrayBuffer.cs" />
+    <Compile Include="MaxMind.Db\Buffer.cs" />
+    <Compile Include="MaxMind.Db\ByteArrayEqualityComparer.cs" />
+    <Compile Include="MaxMind.Db\CachedDictionary.cs" />
+    <Compile Include="MaxMind.Db\ConstructorAttribute.cs" />
+    <Compile Include="MaxMind.Db\Decoder.cs" />
+    <Compile Include="MaxMind.Db\DeserializationException.cs" />
+    <Compile Include="MaxMind.Db\DictionaryActivatorCreator.cs" />
+    <Compile Include="MaxMind.Db\GlobalSuppressions.cs" />
+    <Compile Include="MaxMind.Db\InjectableValues.cs" />
+    <Compile Include="MaxMind.Db\InjectAttribute.cs" />
+    <Compile Include="MaxMind.Db\InvalidDatabaseException.cs" />
+    <Compile Include="MaxMind.Db\ListActivatorCreator.cs" />
+    <Compile Include="MaxMind.Db\MemoryMapBuffer.cs" />
+    <Compile Include="MaxMind.Db\Metadata.cs" />
+    <Compile Include="MaxMind.Db\Network.cs" />
+    <Compile Include="MaxMind.Db\NetworkAttribute.cs" />
+    <Compile Include="MaxMind.Db\ParameterAttribute.cs" />
+    <Compile Include="MaxMind.Db\Reader.cs" />
+    <Compile Include="MaxMind.Db\ReflectionUtil.cs" />
+    <Compile Include="MaxMind.Db\TypeAcivatorCreator.cs" />
+    <Compile Include="MaxMind.GeoIP2\DatabaseReader.cs" />
+    <Compile Include="MaxMind.GeoIP2\Exceptions\AddressNotFoundException.cs" />
+    <Compile Include="MaxMind.GeoIP2\Exceptions\GeoIP2Exception.cs" />
+    <Compile Include="MaxMind.GeoIP2\Exceptions\PermissionRequiredException.cs" />
+    <Compile Include="MaxMind.GeoIP2\IGeoIP2DatabaseReader.cs" />
+    <Compile Include="MaxMind.GeoIP2\IGeoIP2Provider.cs" />
+    <Compile Include="MaxMind.GeoIP2\Model\Continent.cs" />
+    <Compile Include="MaxMind.GeoIP2\Model\Country.cs" />
+    <Compile Include="MaxMind.GeoIP2\Model\MaxMind.cs" />
+    <Compile Include="MaxMind.GeoIP2\Model\NamedEntity.cs" />
+    <Compile Include="MaxMind.GeoIP2\Responses\AbstractCountryResponse.cs" />
+    <Compile Include="MaxMind.GeoIP2\Responses\AbstractResponse.cs" />
+    <Compile Include="MaxMind.GeoIP2\Responses\CountryResponse.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="RemoveExceptionRuleTaskList.cs" />
+    <Compile Include="SortableBindingList.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="GeoblockModuleDialogPage.resx">
+      <DependentUpon>GeoblockModuleDialogPage.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="AddExceptionRuleForm.resx">
+      <DependentUpon>AddExceptionRuleForm.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="resources\apply.png">
+    </EmbeddedResource>
+    <EmbeddedResource Include="resources\cancel.png">
+    </EmbeddedResource>
+    <EmbeddedResource Include="resources\geoblock.png">
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="resources\remove.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="CGeoIPModule.snk" />
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup />
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>

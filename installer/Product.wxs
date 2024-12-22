@@ -1,0 +1,253 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi"
+     xmlns:util="http://schemas.microsoft.com/wix/UtilExtension">
+	
+	<Product Id="*" Name="CGeoIPModule" Language="1033" Manufacturer="kimboslice99" Version="1.0.0.0" UpgradeCode="FECA01B4-96AC-414D-B389-2E210C8A0385">
+		<Package InstallerVersion="500" Compressed="yes" InstallScope="perMachine" Platform="x64" />
+		<Media Id="1" Cabinet="CGeoIPModule.cab" EmbedCab="yes" />
+
+		<!-- Feature section that references the ComponentGroup -->
+		<Feature Id="MainFeature" Title="Main Feature" Level="1">
+			<ComponentGroupRef Id="ProductComponents" />
+		</Feature>
+	</Product>
+
+	<!-- Directory structure -->
+	<Fragment>
+		<Directory Id="TARGETDIR" Name="SourceDir">
+			<Directory Id="ProgramFiles64Folder">
+				<Directory Id="APPLICATIONROOTDIRECTORY" Name="CGeoIPModule" />
+			</Directory>
+
+			<Directory Id="System64Folder">
+				<Directory Id="INETSVCFOLDER" Name="inetsrv">
+					<Directory Id="CONFIGFOLDER" Name="config">
+						<Directory Id="SCHEMADIRECTORY" Name="schema" />
+					</Directory>
+				</Directory>
+			</Directory>
+			
+			<Directory Id="GlobalAssemblyCache" Name="GlobalAssemblyCache">
+				<Component Id="GeoIPModuleUI" Guid="{B07FF430-AAB4-49E6-8035-60142942F325}">
+					<File Id="GeoIPModuleUI" Source="..\ui-src\bin\debug\CGeoIPModuleUI.dll" KeyPath="yes" Assembly=".net"/>
+				</Component>
+			</Directory>
+		</Directory>
+	</Fragment>
+
+	<!-- Define components for DLL and XML file -->
+	<Fragment>
+		<DirectoryRef Id="SCHEMADIRECTORY">
+			<Component Id="CGeoIPModuleSchema" Guid="A997768B-7F92-45E8-A917-7077735DD5B3">
+				<File Id="CGeoIPModule_schema.xml" Source="..\src\CGeoIPModule_schema.xml" KeyPath="yes" />
+			</Component>
+		</DirectoryRef>
+		<DirectoryRef Id="APPLICATIONROOTDIRECTORY">
+			<!-- Component for CGeoIPModule.dll -->
+			<Component Id="CGeoIPModule" Guid="696E8B09-B421-45A9-B003-771C622D9DD6">
+				<File Id="CGeoIPModule.dll" Source="..\src\x64\Debug\CGeoIPModule.dll" KeyPath="yes" Checksum="yes" />
+			</Component>			
+		</DirectoryRef>
+	</Fragment>
+
+	<!-- Product Components for Installation -->
+	<Fragment>
+		<ComponentGroup Id="ProductComponents">
+			<!-- DLL and XML files -->
+			<ComponentRef Id="CGeoIPModuleSchema" />
+			
+			<ComponentRef Id="CGeoIPModule" />
+			<ComponentRef Id="GeoIPModuleUI" />
+			<!-- Admin Module Configuration -->
+			<ComponentRef Id="ModuleConfig" />
+		</ComponentGroup>
+	</Fragment>
+
+	<!-- Admin module configuration -->
+	<Fragment>
+		<Component Id="ModuleConfig" Guid="67DABE54-965B-4887-ADB3-BDB28EC19B6B" Directory="APPLICATIONROOTDIRECTORY" KeyPath="yes">
+			<CreateFolder />
+			<!-- Add module to globalModules -->
+			<util:XmlConfig Id="appHostGlobal"
+							File="[WindowsFolder]System32\inetsrv\config\applicationHost.config"
+							Action="create"
+							ElementPath="//configuration/system.webServer/globalModules"
+							VerifyPath="add[\[] @name='CGeoIPModule'[\]]"
+							Name="add"
+							Node="element"
+							Sequence="1"
+							On="install" />
+			
+			<util:XmlConfig Id="appHostGlobalName"
+							File="[WindowsFolder]System32\inetsrv\config\applicationHost.config"
+							ElementPath="appHostGlobal"
+							Name="name"
+							Value="CGeoIPModule"
+							Sequence="2" />
+			
+			<util:XmlConfig Id="appHostGlobalImage"
+							File="[WindowsFolder]System32\inetsrv\config\applicationHost.config"
+							ElementPath="appHostGlobal"
+							Name="image"
+							Value="[APPLICATIONROOTDIRECTORY]CGeoIPModule.dll"
+							Sequence="3" />
+			
+			<util:XmlConfig Id="appHostGlobalPreCondition"
+							File="[WindowsFolder]System32\inetsrv\config\applicationHost.config"
+							ElementPath="appHostGlobal"
+							Name="preCondition"
+							Value="bitness64"
+							Sequence="4" />
+			
+			<!-- Remove the module -->
+			<util:XmlConfig Id="removeAppHostGlobal"
+							File="[WindowsFolder]System32\inetsrv\config\applicationHost.config"
+							Action="delete"
+							Node="element"
+							ElementPath="//configuration/system.webServer/globalModules"
+							VerifyPath="add[\[]@name='CGeoIPModule'[\]]"
+							On="uninstall"
+							Sequence="1" />
+			
+			<!-- Add module to modules-->
+			<util:XmlConfig Id="appHostModules"
+							File="[WindowsFolder]System32\inetsrv\config\applicationHost.config"
+							Action="create"
+							ElementPath="//configuration/system.webServer/modules"
+							VerifyPath="add[\[] @name='CGeoIPModule'[\]]"
+							Name="add"
+							Node="element"
+							Sequence="1"
+							On="install" />
+			
+			<util:XmlConfig Id="appHostModulesName"
+							File="[WindowsFolder]System32\inetsrv\config\applicationHost.config"
+							ElementPath="appHostModules"
+							Name="name"
+							Value="CGeoIPModule"
+							Sequence="2" />
+			
+			<util:XmlConfig Id="appHostModulesPreCondition"
+							File="[WindowsFolder]System32\inetsrv\config\applicationHost.config"
+							ElementPath="appHostModules"
+							Name="preCondition"
+							Value="bitness64"
+							Sequence="3" />
+			
+			<util:XmlConfig Id="appHostModulesLockItem"
+							File="[WindowsFolder]System32\inetsrv\config\applicationHost.config"
+							ElementPath="appHostModules"
+							Name="lockItem"
+							Value="false"
+							Sequence="4" />
+			
+			<!-- Remove the module -->
+			<util:XmlConfig Id="removeAppHostModules"
+							File="[WindowsFolder]System32\inetsrv\config\applicationHost.config"
+							Action="delete"
+							Node="element"
+							ElementPath="//configuration/system.webServer/modules"
+							VerifyPath="add[\[]@name='CGeoIPModule' and @preCondition='bitness64' and @lockItem='false'[\]]"
+							On="uninstall"
+							Sequence="1" />
+			
+			<!-- The module config -->
+			<util:XmlConfig Id="appHostEntry"
+							File="[WindowsFolder]System32\inetsrv\config\applicationHost.config"
+							Action="create"
+							ElementPath="//configuration/configSections/sectionGroup[\[]@name='system.webServer'[\]]"
+							VerifyPath="section[\[] @name='CGeoIPModule'[\]]"
+							Name="section"
+							Node="element"
+							Sequence="1"
+							On="install" />
+			
+			<util:XmlConfig Id="appHostEntryName"
+							File="[WindowsFolder]System32\inetsrv\config\applicationHost.config"
+							ElementPath="appHostEntry"
+							Name="name"
+							Value="CGeoIPModule"
+							Sequence="2" />
+			
+			<util:XmlConfig Id="appHostEntryOverrideMode"
+							File="[WindowsFolder]System32\inetsrv\config\applicationHost.config"
+							ElementPath="appHostEntry"
+							Name="overrideModeDefault"
+							Value="Allow"
+							Sequence="3" />
+			
+			<!-- Remove the module config -->
+			<util:XmlConfig Id="removeAppHostEntry"
+							File="[WindowsFolder]System32\inetsrv\config\applicationHost.config"
+							Action="delete"
+							Node="element"
+							ElementPath="//configuration/configSections/sectionGroup[\[]@name='system.webServer'[\]]"
+							VerifyPath="section[\[]@name='CGeoIPModule' and @overrideModeDefault='Allow'[\]]"
+							On="uninstall"
+							Sequence="1" />
+			
+			<!-- The module provider config -->
+			<util:XmlConfig Id="adminModuleProvider"
+							File="[WindowsFolder]System32\inetsrv\config\administration.config"
+							Action="create"
+							ElementPath="//configuration/moduleProviders"
+							VerifyPath="add[\[] @name='CGeoIPModule'[\]]"
+							Name="add"
+							Node="element"
+							Sequence="1"
+							On="install" />
+			
+			<util:XmlConfig Id="adminModuleProviderName"
+							File="[WindowsFolder]System32\inetsrv\config\administration.config"
+							ElementPath="adminModuleProvider"
+							Name="name"
+							Value="CGeoIPModule"
+							Sequence="2" />
+			
+			<util:XmlConfig Id="adminModuleProviderType"
+							File="[WindowsFolder]System32\inetsrv\config\administration.config"
+							ElementPath="adminModuleProvider"
+							Name="type"
+							Value="CGeoIPModule.GeoblockModuleProvider, CGeoIPModuleUI, Version=1.0.0.0, Culture=neutral, PublicKeyToken=f8b59b594cc1445d"
+							Sequence="3" />
+			
+			<!-- Remove the module provider config -->
+			<util:XmlConfig Id="removeAdminModuleProvider"
+							File="[WindowsFolder]System32\inetsrv\config\administration.config"
+							Action="delete"
+							Node="element"
+							ElementPath="//configuration/moduleProviders"
+							VerifyPath="add[\[]@name='CGeoIPModule'[\]]"
+							On="uninstall"
+							Sequence="1" />
+			
+			<!-- Add module for all sites -->
+			<util:XmlConfig Id="adminModule"
+							File="[WindowsFolder]System32\inetsrv\config\administration.config"
+							Action="create"
+							ElementPath="//configuration/location[\[]@path='.'[\]]/modules"
+							VerifyPath="add[\[] @name='CGeoIPModule'[\]]"
+							Name="add"
+							Node="element"
+							Sequence="1"
+							On="install" />
+			
+			<util:XmlConfig Id="adminModuleName"
+							File="[WindowsFolder]System32\inetsrv\config\administration.config"
+							ElementPath="adminModule"
+							Name="name"
+							Value="CGeoIPModule"
+							Sequence="2" />
+			
+			<!-- remove module for all sites -->
+			<util:XmlConfig Id="removeAdminModule"
+							File="[WindowsFolder]System32\inetsrv\config\administration.config"
+							Action="delete"
+							Node="element"
+							ElementPath="//configuration/location[\[]@path='.'[\]]/modules"
+							VerifyPath="add[\[]@name='CGeoIPModule'[\]]"
+							On="uninstall"
+							Sequence="1" />
+		</Component>
+	</Fragment>
+</Wix>

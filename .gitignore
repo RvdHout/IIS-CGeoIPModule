@@ -1,4 +1,13 @@
+.vs/*
+obj/*
 src/.vs/*
 src/CGeoIPModule/*
 src/x86/*
 src/x64/*
+ui-src/.vs/*
+ui-src/obj/*
+ui-src/bin/*
+installer/bin/*
+installer/.vs/*
+installer/obj/*
+packages/*

@@ -45,11 +45,11 @@ public:
 
     BOOL GetAllowMode(IN IHttpContext* pW3Context);
 
+    std::vector<ExceptionRules> exceptionRules(IN IHttpContext* pHttpContext, IN PSOCKADDR pAddress);
+
     wchar_t* convertCharArrayToLPCWSTR(IN const char* charArray, IN int length);
 
     char* BSTRToCharArray(IN BSTR bstr);
-
-    std::vector<ExceptionRules> exceptionRules(IN IHttpContext* pHttpContext, IN PSOCKADDR pAddress);
 
 #ifdef _DEBUG
     CHAR* PSOCKADDRtoString(IN PSOCKADDR pSockAddr);

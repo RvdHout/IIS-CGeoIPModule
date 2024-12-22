@@ -2,70 +2,12 @@
  _Geoblocking module for IIS written in native C++_
  
  This is my first real dive into C++! If you notice ive done something incorrectly within this code, please do point it out or make a PR!
- 
+
 ## Installation
 
-- copy `CGeoIPModule.xml` to `%windir%\System32\inetsrv\config\schema`
+Grab the latest installer from the releases page
 
-- edit `%windir%\System32\inetsrv\config\applicationHost.config` and find the line
-
-```xml
-        <sectionGroup name="system.webServer">
-```
-and add `<section name="CGeoIPModule" />`
-
-copy `CGeoIPModule.dll` to `%windir%\System32\inetsrv`
-
-install via IIS dialogs (Server->Modules->Configure Native Modules->Register)
-
-## Usage
-
-action options
- - `Not Found`
- - `Close`
- - `Forbidden`
- - `Unauthorized`
- - `Reset`
- 
 Server variable `GEOIP_COUNTRY` will contain the iso country code on successful lookup, `ZZ` for local addresses as defined by the `IsLocalAddress()` function or `--` for unsuccessful lookups
-
-example usage `web.config` to block one country
-```xml
-    <system.webServer>
-    ...
-        <CGeoIPModule enabled="true" action="Not Found" allowListed="false" path="C:\GeoIP\GeoIP-country.mmdb">
-            <CountryCodes>
-                <clear />
-                <add code="CN" />
-            </CountryCodes>
-        </CGeoIPModule>
-        ...
-```
-
-example usage `web.config` to allow only one country
-```xml
-    <system.webServer>
-    ...
-        <CGeoIPModule enabled="true" action="Not Found" allowListed="true" path="C:\GeoIP\GeoIP-country.mmdb">
-            <CountryCodes>
-                <clear />
-                <add code="US" />
-            </CountryCodes>
-        </CGeoIPModule>
-        ...
-```
-
-or perhaps you just want the server variable to be set for easy retireval from server scripting, just set allowListed to false with no country code's selected
-```xml
-    <system.webServer>
-    ...
-        <CGeoIPModule enabled="true" allowListed="false" path="C:\GeoIP\GeoIP-country.mmdb">
-            <CountryCodes>
-                <clear />
-            </CountryCodes>
-        </CGeoIPModule>
-        ...
-```
 
 ## Building
 
@@ -79,12 +21,16 @@ cmake --build . --config Release --target install
 
 - Download and install Windows SDK.
 
-- Build project with Visual Studio (I use 2022)
+- Get [Wix](https://github.com/wixtoolset/wix3/releases)
+
+- Get [Wix Extension for VS2022](https://marketplace.visualstudio.com/items?itemName=WixToolset.WixToolsetVisualStudio2022Extension)
+
+- Build project with Visual Studio
 
 ## Reason for this modules existence
 I have been using the [GeoIP2blockModule](https://github.com/RvdHout/IIS-GeoIP2block-Module) for several years, and while its a well written solution, it is a bit slower (probably due to the introduction of asp.net into the request pipeline)
 
-This module has much lower impact on IIS's performance, making it more suitable to sites that see heavy load. Though it does lack a nice UI in IIS manager
+This module has much lower impact on IIS's performance, making it more suitable to sites that see heavy load.
 
 ## Bombardier results
 1.39 KB static file for testing (small to emphasize transactional throughput)
