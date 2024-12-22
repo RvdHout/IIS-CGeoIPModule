@@ -6,10 +6,25 @@
 		<Package InstallerVersion="500" Compressed="yes" InstallScope="perMachine" Platform="x64" />
 		<Media Id="1" Cabinet="CGeoIPModule.cab" EmbedCab="yes" />
 
+
+		<Property Id="IISINSTALLED">
+			<RegistrySearch Id="CheckRegistryKey"
+							Root="HKLM"
+							Key="SOFTWARE\Microsoft\Inetstp" 
+							Name="VersionString"
+							Type="raw" />
+		</Property>
+
+		<!-- Define the condition -->
+		<Condition Message="It would appear you do not have IIS installed!">
+			<![CDATA[IISINSTALLED]]>
+		</Condition>
+
 		<!-- Feature section that references the ComponentGroup -->
 		<Feature Id="MainFeature" Title="Main Feature" Level="1">
 			<ComponentGroupRef Id="ProductComponents" />
 		</Feature>
+
 	</Product>
 
 	<!-- Directory structure -->
@@ -29,7 +44,7 @@
 			
 			<Directory Id="GlobalAssemblyCache" Name="GlobalAssemblyCache">
 				<Component Id="GeoIPModuleUI" Guid="{B07FF430-AAB4-49E6-8035-60142942F325}">
-					<File Id="GeoIPModuleUI" Source="..\ui-src\bin\debug\CGeoIPModuleUI.dll" KeyPath="yes" Assembly=".net"/>
+					<File Id="GeoIPModuleUI" Source="..\ui-src\bin\$(var.Configuration)\CGeoIPModuleUI.dll" KeyPath="yes" Assembly=".net"/>
 				</Component>
 			</Directory>
 		</Directory>
@@ -45,7 +60,7 @@
 		<DirectoryRef Id="APPLICATIONROOTDIRECTORY">
 			<!-- Component for CGeoIPModule.dll -->
 			<Component Id="CGeoIPModule" Guid="696E8B09-B421-45A9-B003-771C622D9DD6">
-				<File Id="CGeoIPModule.dll" Source="..\src\x64\Debug\CGeoIPModule.dll" KeyPath="yes" Checksum="yes" />
+				<File Id="CGeoIPModule.dll" Source="..\src\x64\$(var.Configuration)\CGeoIPModule.dll" KeyPath="yes" Checksum="yes" />
 			</Component>			
 		</DirectoryRef>
 	</Fragment>
