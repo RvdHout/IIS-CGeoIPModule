@@ -60,14 +60,14 @@
 		-->
 		<Property Id="GLOBALMODULESLOCATIONPATH" Secure="yes">
 			<panel:XmlSearch Id="CheckGlobalModules" FilePath="[WindowsFolder]System32\inetsrv\config\applicationHost.config"
-							 XPath="//configuration/location/system.webServer/globalModules/add[\[]@name='DefaultDocumentModule'[\]]/@name"
+							 XPath="//configuration/location/system.webServer/globalModules/add[\[]@name='ConfigurationValidationModule'[\]]/@name"
 							 Language="XPath" Match="all">
 				<![CDATA[GLOBALMODULESLOCATIONPATH]]>
 			</panel:XmlSearch>
 		</Property>
 		<Property Id="MODULESLOCATIONPATH" Secure="yes">
 			<panel:XmlSearch Id="CheckModules" FilePath="[WindowsFolder]System32\inetsrv\config\applicationHost.config"
-							 XPath="//configuration/location[\[]@path=''[\]]/system.webServer/modules/add[\[]@name='DefaultDocumentModule'[\]]/@name"
+							 XPath="//configuration/location[\[]@path=''[\]]/system.webServer/modules/add[\[]@name='ConfigurationValidationModule'[\]]/@name"
 							 Language="XPath" Match="all">
 				<![CDATA[MODULESLOCATIONPATH]]>
 			</panel:XmlSearch>
@@ -111,7 +111,7 @@
 	<Fragment>
 		<!-- Add module to globalModules, if found on root -->
 		<Component Id="globalModules" Guid="6D2DD868-17C7-49C0-B1EF-73BECFBA2BCC" Directory="APPLICATIONROOTDIRECTORY" KeyPath="yes">
-			<Condition><![CDATA[NOT GLOBALMODULESLOCATIONPATH = "DefaultDocumentModule"]]></Condition>
+			<Condition><![CDATA[NOT GLOBALMODULESLOCATIONPATH = "ConfigurationValidationModule"]]></Condition>
 			<util:XmlConfig Id="appHostGlobal"
 							File="[WindowsFolder]System32\inetsrv\config\applicationHost.config"
 							Action="create"
@@ -155,7 +155,7 @@
 		</Component>
 		<!-- Add module to globalModules, if found in location path="" -->
 		<Component Id="globalModulesLocationPath" Guid="3CED49AF-0C23-4A53-A578-1C554A36124B" Directory="APPLICATIONROOTDIRECTORY" KeyPath="yes">
-			<Condition><![CDATA[GLOBALMODULESLOCATIONPATH = "DefaultDocumentModule"]]></Condition>
+			<Condition><![CDATA[GLOBALMODULESLOCATIONPATH = "ConfigurationValidationModule"]]></Condition>
 			<util:XmlConfig Id="appHostGlobalLocationPath"
 							File="[WindowsFolder]System32\inetsrv\config\applicationHost.config"
 							Action="create"
@@ -198,7 +198,7 @@
 							Sequence="1" />
 		</Component>
 		<Component Id="modules" Guid="5ACBE269-A44D-4BB1-A9B3-141A9409A009" Directory="APPLICATIONROOTDIRECTORY" KeyPath="yes">
-			<Condition><![CDATA[NOT MODULESLOCATIONPATH = "DefaultDocumentModule"]]></Condition>
+			<Condition><![CDATA[NOT MODULESLOCATIONPATH = "ConfigurationValidationModule"]]></Condition>
 			<!-- Add module to modules-->
 			<util:XmlConfig Id="appHostModules"
 							File="[WindowsFolder]System32\inetsrv\config\applicationHost.config"
@@ -235,7 +235,7 @@
 							Sequence="1" />
 		</Component>
 		<Component Id="modulesLocationPath" Guid="A6AF2EBC-296F-4B6E-8B3E-7ECE57664610" Directory="APPLICATIONROOTDIRECTORY" KeyPath="yes">
-			<Condition><![CDATA[MODULESLOCATIONPATH = "DefaultDocumentModule"]]></Condition>
+			<Condition><![CDATA[MODULESLOCATIONPATH = "ConfigurationValidationModule"]]></Condition>
 			<!-- Add module to modules-->
 			<util:XmlConfig Id="appHostModulesLocationPath"
 							File="[WindowsFolder]System32\inetsrv\config\applicationHost.config"
