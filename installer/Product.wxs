@@ -62,14 +62,14 @@
 			<panel:XmlSearch Id="CheckGlobalModules" FilePath="[WindowsFolder]System32\inetsrv\config\applicationHost.config"
 							 XPath="//configuration/location/system.webServer/globalModules/add[\[]@name='DefaultDocumentModule'[\]]/@name"
 							 Language="XPath" Match="all">
-				<![CDATA[nonglobal]]>
+				<![CDATA[GLOBALMODULESLOCATIONPATH]]>
 			</panel:XmlSearch>
 		</Property>
 		<Property Id="MODULESLOCATIONPATH" Secure="yes">
 			<panel:XmlSearch Id="CheckModules" FilePath="[WindowsFolder]System32\inetsrv\config\applicationHost.config"
 							 XPath="//configuration/location[\[]@path=''[\]]/system.webServer/modules/add[\[]@name='DefaultDocumentModule'[\]]/@name"
 							 Language="XPath" Match="all">
-				<![CDATA[nonglobal]]>
+				<![CDATA[MODULESLOCATIONPATH]]>
 			</panel:XmlSearch>
 		</Property>
 	</Fragment>
@@ -111,7 +111,7 @@
 	<Fragment>
 		<!-- Add module to globalModules, if found on root -->
 		<Component Id="globalModules" Guid="6D2DD868-17C7-49C0-B1EF-73BECFBA2BCC" Directory="APPLICATIONROOTDIRECTORY" KeyPath="yes">
-			<Condition><![CDATA[GLOBALMODULESLOCATIONPATH = "nonglobal"]]></Condition>
+			<Condition><![CDATA[NOT GLOBALMODULESLOCATIONPATH = "DefaultDocumentModule"]]></Condition>
 			<util:XmlConfig Id="appHostGlobal"
 							File="[WindowsFolder]System32\inetsrv\config\applicationHost.config"
 							Action="create"
@@ -198,7 +198,7 @@
 							Sequence="1" />
 		</Component>
 		<Component Id="modules" Guid="5ACBE269-A44D-4BB1-A9B3-141A9409A009" Directory="APPLICATIONROOTDIRECTORY" KeyPath="yes">
-			<Condition><![CDATA[MODULESLOCATIONPATH = "nonglobal"]]></Condition>
+			<Condition><![CDATA[NOT MODULESLOCATIONPATH = "DefaultDocumentModule"]]></Condition>
 			<!-- Add module to modules-->
 			<util:XmlConfig Id="appHostModules"
 							File="[WindowsFolder]System32\inetsrv\config\applicationHost.config"
