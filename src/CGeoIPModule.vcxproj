@@ -123,14 +123,14 @@
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>C:\Program Files %28x86%29\maxminddb\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Program Files\maxminddb\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
       <AdditionalDependencies>maxminddb.lib;OleAut32.lib</AdditionalDependencies>
-      <AdditionalLibraryDirectories>C:\Program Files %28x86%29\maxminddb\lib</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>C:\Program Files\maxminddb\lib</AdditionalLibraryDirectories>
       <ModuleDefinitionFile>Source.def</ModuleDefinitionFile>
     </Link>
   </ItemDefinitionGroup>
@@ -144,7 +144,7 @@
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>C:\Program Files %28x86%29\maxminddb\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Program Files\maxminddb\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -153,7 +153,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
       <ModuleDefinitionFile>Source.def</ModuleDefinitionFile>
-      <AdditionalLibraryDirectories>C:\Program Files %28x86%29\maxminddb\lib</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>C:\Program Files\maxminddb\lib</AdditionalLibraryDirectories>
       <AdditionalDependencies>maxminddb.lib;OleAut32.lib</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
