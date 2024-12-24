@@ -141,22 +141,36 @@ namespace CGeoIPModule
             else
             {
                 IPAddress range;
-                IPAddress mask;
+                string maskInput = TBMask.Text;
                 if (!IPAddress.TryParse(TBAddressRange.Text, out range))
                 {
                     MessageBox.Show(this, "'" + TBAddressRange.Text + "' is an invalid IP address.", this.Text, MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
                     return;
                 }
 
-                if (!IPAddress.TryParse(TBMask.Text, out mask))
+                if (family == "ipv4")
                 {
-                    MessageBox.Show(this, "'" + TBMask.Text + "' is an invalid subnet mask.", this.Text, MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
-                    return;
+                    IPAddress mask;
+                    if (!IPAddress.TryParse(maskInput, out mask))
+                    {
+                        MessageBox.Show(this, $"'{maskInput}' is an invalid subnet mask.", this.Text, MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                        return;
+                    }
+                    maskInput = mask.ToString(); // Ensure consistent handling for IPv4
+                }
+                else if (family == "ipv6")
+                {
+                    if (!int.TryParse(maskInput, out int cidr) || cidr < 0 || cidr > 128)
+                    {
+                        MessageBox.Show(this, $"'{maskInput}' is an invalid CIDR prefix length for IPv6.", this.Text, MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                        return;
+                    }
+                    // MaskInput remains as CIDR for IPv6
                 }
 
                 try
                 {
-                    var cidr = IPAddressRange.Parse(TBAddressRange.Text + "/" + TBMask.Text).ToCidrString();
+                    var cidr = IPAddressRange.Parse(TBAddressRange.Text + "/" + maskInput).ToCidrString();
                 }
                 catch 
                 {
@@ -165,7 +179,7 @@ namespace CGeoIPModule
                 }
 
                 //We will check against existing exception rules if there is a conflict or overlap
-                ExceptionRule newRule = new ExceptionRule(this.AllowMode, range.ToString(), mask.ToString(), family.ToString());
+                ExceptionRule newRule = new ExceptionRule(this.AllowMode, range.ToString(), maskInput.ToString(), family.ToString());
                 if (CheckNewRule(newRule))
                 {
                     this.exceptionRule = newRule;
