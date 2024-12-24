@@ -93,10 +93,6 @@
       <ModuleDefinitionFile>Source.def</ModuleDefinitionFile>
       <AdditionalDependencies>maxminddb.lib;OleAut32.lib</AdditionalDependencies>
     </Link>
-      <Command>@echo off
-net start w3svc &gt; NUL 2&gt;&amp;1
-exit 0</Command>
-    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -118,10 +114,6 @@ exit 0</Command>
       <ModuleDefinitionFile>Source.def</ModuleDefinitionFile>
       <AdditionalDependencies>maxminddb.lib;OleAut32.lib</AdditionalDependencies>
     </Link>
-    <PostBuildEvent>
-      <Command>
-      </Command>
-    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -141,18 +133,6 @@ exit 0</Command>
       <AdditionalLibraryDirectories>C:\Program Files %28x86%29\maxminddb\lib</AdditionalLibraryDirectories>
       <ModuleDefinitionFile>Source.def</ModuleDefinitionFile>
     </Link>
-    <PreBuildEvent>
-      <Command>
-      </Command>
-echo Killed processes
-timeout /t 3 &gt; NUL 2&gt;&amp;1
-    </PreBuildEvent>
-    <PostBuildEvent>
-      <Command>
-      <Command>@echo off
-net start w3svc &gt; NUL 2&gt;&amp;1
-exit 0</Command>
-    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
