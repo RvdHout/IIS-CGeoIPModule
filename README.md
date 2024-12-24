@@ -15,7 +15,7 @@ Server variable `GEOIP_COUNTRY` will contain the iso country code on successful 
 ```
 git clone --recursive https://github.com/maxmind/libmaxminddb
 mkdir libmaxminddb\build && cd libmaxminddb\build
-cmake -DMSVC_STATIC_RUNTIME=ON -DBUILD_SHARED_LIBS=OFF -A x64 ..
+cmake -DMSVC_STATIC_RUNTIME=ON -DBUILD_SHARED_LIBS=OFF -A x64 .. // or remove -A x64 to build x86 lib
 cmake --build . --config Release --target install
 ```
 
