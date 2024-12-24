@@ -4,7 +4,7 @@
 	 xmlns:panel="http://schemas.panel-sw.co.il/wix/WixExtension">
 
 	<Product Id="*" Name="CGeoIPModule" Language="1033" Manufacturer="kimboslice99" Version="1.0.0.0" UpgradeCode="FECA01B4-96AC-414D-B389-2E210C8A0385">
-		<Package InstallerVersion="500" Compressed="yes" InstallScope="perMachine" Platform="x64" />
+		<Package InstallerVersion="500" Compressed="yes" InstallScope="perMachine" />
 		<Media Id="1" Cabinet="CGeoIPModule.cab" EmbedCab="yes" />
 
 		<Condition Message="This application is already installed.">
