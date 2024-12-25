@@ -619,7 +619,7 @@ VOID Functions::DenyAction(IN IHttpContext* pHttpContext)
     {
         pHttpResponse->CloseConnection();
     }
-    else if (wcscmp(mode, L"Not Found") == 0)
+    else if (wcscmp(mode, L"NotFound") == 0)
     {
         pHttpResponse->SetStatus(404, "Not Found");
     }
@@ -638,6 +638,10 @@ VOID Functions::DenyAction(IN IHttpContext* pHttpContext)
     else if (wcscmp(mode, L"Teapot") == 0)
     {
         pHttpResponse->SetStatus(418, "I'm a teapot");
+    }
+    else if (wcscmp(mode, L"Gone") == 0)
+    {
+        pHttpResponse->SetStatus(410, "Gone");
     }
     else
     {

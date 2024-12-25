@@ -149,13 +149,25 @@ namespace CGeoIPModule
             item3.Value = "NotFound";
             this.comboBoxDenyAction.Items.Add(item3);
             ComboboxItem item4 = new ComboboxItem();
-            item4.Text = "Abort";
-            item4.Value = "Abort";
+            item4.Text = "Reset";
+            item4.Value = "Reset";
             this.comboBoxDenyAction.Items.Add(item4);
             ComboboxItem item5 = new ComboboxItem();
             item5.Text = "Close";
             item5.Value = "Close";
             this.comboBoxDenyAction.Items.Add(item5);
+            ComboboxItem item6 = new ComboboxItem();
+            item6.Text = "Close";
+            item6.Value = "Close";
+            this.comboBoxDenyAction.Items.Add(item6);
+            ComboboxItem item7 = new ComboboxItem();
+            item7.Text = "I'm a teapot";
+            item7.Value = "Teapot";
+            this.comboBoxDenyAction.Items.Add(item7);
+            ComboboxItem item8 = new ComboboxItem();
+            item8.Text = "Gone";
+            item8.Value = "Gone";
+            this.comboBoxDenyAction.Items.Add(item8);
             this.comboBoxDenyAction.SelectedIndex = 0;
             this.comboBoxDenyAction.SelectedIndexChanged += new EventHandler(comboBoxDenyAction_SelectedIndexChanged);
 

@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi"
-     xmlns:util="http://schemas.microsoft.com/wix/UtilExtension"
-	 xmlns:panel="http://schemas.panel-sw.co.il/wix/WixExtension">
+     xmlns:util="http://schemas.microsoft.com/wix/UtilExtension">
 
 	<Product Id="*" Name="CGeoIPModule" Language="1033" Manufacturer="kimboslice99" Version="1.0.0.0" UpgradeCode="FECA01B4-96AC-414D-B389-2E210C8A0385">
 		<Package Description="CGeoIPModule for IIS" InstallerVersion="500" Compressed="yes" InstallScope="perMachine" InstallPrivileges="elevated" />
@@ -54,11 +53,10 @@
 	<!-- Directory structure -->
 	<Fragment>
 		<Directory Id="TARGETDIR" Name="SourceDir">
+			<?if $(var.Win64) = "yes" ?>
 			<Directory Id="ProgramFiles64Folder">
 				<Directory Id="APPLICATIONROOTDIRECTORY" Name="CGeoIPModule" />
 			</Directory>
-
-			<?if $(var.Win64) = "yes" ?>
 			<Directory Id="System64Folder">
 				<Directory Id="INETSVC64FOLDER" Name="inetsrv">
 					<Directory Id="CONFIGFOLDER" Name="config">
@@ -67,6 +65,9 @@
 				</Directory>
 			</Directory>
 			<?else ?>
+			<Directory Id="ProgramFilesFolder">
+				<Directory Id="APPLICATIONROOTDIRECTORY" Name="CGeoIPModule" />
+			</Directory>
 			<Directory Id="SystemFolder">
 				<Directory Id="INETSVC32FOLDER" Name="inetsrv">
 					<Directory Id="CONFIGFOLDER" Name="config">
@@ -82,25 +83,6 @@
 				</Component>
 			</Directory>
 		</Directory>
-
-		<!--
-		Property to store the result of the XML search
-		Not a huge fan of this. Is there no way to just check for the existence of a node? Seems I must select a value.
-		-->
-		<Property Id="GLOBALMODULESLOCATIONPATH" Secure="yes">
-			<panel:XmlSearch Id="CheckGlobalModules" FilePath="$(var.ConfigFile)"
-							 XPath="//configuration/location/system.webServer/globalModules/add[\[]@name='ConfigurationValidationModule'[\]]/@name"
-							 Language="XPath" Match="all">
-				<![CDATA[GLOBALMODULESLOCATIONPATH]]>
-			</panel:XmlSearch>
-		</Property>
-		<Property Id="MODULESLOCATIONPATH" Secure="yes">
-			<panel:XmlSearch Id="CheckModules" FilePath="$(var.ConfigFile)"
-							 XPath="//configuration/location/system.webServer/modules/add[\[]@name='ConfigurationValidationModule'[\]]/@name"
-							 Language="XPath" Match="all">
-				<![CDATA[MODULESLOCATIONPATH]]>
-			</panel:XmlSearch>
-		</Property>
 	</Fragment>
 
 	<!-- Define components for DLL and XML file -->
@@ -128,178 +110,21 @@
 			<ComponentRef Id="GeoIPModuleUI" />
 			<!-- Admin Module Configuration -->
 			<ComponentRef Id="ModuleConfig" />
-
-			<ComponentRef Id="globalModules"/>
-			<ComponentRef Id="globalModulesLocationPath"/>
-			<ComponentRef Id="modules"/>
-			<ComponentRef Id="modulesLocationPath"/>
 		</ComponentGroup>
 	</Fragment>
 
 	<Fragment>
-		<!-- Add module to globalModules, if found on root -->
-		<Component Id="globalModules" Guid="6D2DD868-17C7-49C0-B1EF-73BECFBA2BCC" Directory="APPLICATIONROOTDIRECTORY" KeyPath="yes">
-			<Condition><![CDATA[NOT GLOBALMODULESLOCATIONPATH = "ConfigurationValidationModule"]]></Condition>
-			<util:XmlConfig Id="appHostGlobal"
-							File="$(var.ConfigFile)"
-							Action="create"
-							ElementPath="//configuration/system.webServer/globalModules"
-							VerifyPath="add[\[] @name='CGeoIPModule'[\]]"
-							Name="add"
-							Node="element"
-							Sequence="1"
-							On="install"/>
-
-			<util:XmlConfig Id="appHostGlobalName"
-							File="$(var.ConfigFile)"
-							ElementPath="appHostGlobal"
-							Name="name"
-							Value="CGeoIPModule"
-							Sequence="2" />
-
-			<util:XmlConfig Id="appHostGlobalImage"
-							File="$(var.ConfigFile)"
-							ElementPath="appHostGlobal"
-							Name="image"
-							Value="[APPLICATIONROOTDIRECTORY]CGeoIPModule.dll"
-							Sequence="3" />
-
-			<util:XmlConfig Id="appHostGlobalPreCondition"
-							File="$(var.ConfigFile)"
-							ElementPath="appHostGlobal"
-							Name="preCondition"
-							Value="bitness64"
-							Sequence="4" />
-
-			<!-- Remove the module -->
-			<util:XmlConfig Id="removeAppHostGlobal"
-							File="$(var.ConfigFile)"
-							Action="delete"
-							Node="element"
-							ElementPath="//configuration/system.webServer/globalModules"
-							VerifyPath="add[\[]@name='CGeoIPModule'[\]]"
-							On="uninstall"
-							Sequence="1" />
-		</Component>
-		<!-- Add module to globalModules, if found in location path="" -->
-		<Component Id="globalModulesLocationPath" Guid="3CED49AF-0C23-4A53-A578-1C554A36124B" Directory="APPLICATIONROOTDIRECTORY" KeyPath="yes">
-			<Condition><![CDATA[GLOBALMODULESLOCATIONPATH = "ConfigurationValidationModule"]]></Condition>
-			<util:XmlConfig Id="appHostGlobalLocationPath"
-							File="$(var.ConfigFile)"
-							Action="create"
-							ElementPath="//configuration/location[\[] @path=''[\]]/system.webServer/globalModules"
-							VerifyPath="add[\[] @name='CGeoIPModule'[\]]"
-							Name="add"
-							Node="element"
-							Sequence="1"
-							On="install"/>
-
-			<util:XmlConfig Id="appHostGlobalNameLocationPath"
-							File="$(var.ConfigFile)"
-							ElementPath="appHostGlobalLocationPath"
-							Name="name"
-							Value="CGeoIPModule"
-							Sequence="2" />
-
-			<util:XmlConfig Id="appHostGlobalImageLocationPath"
-							File="$(var.ConfigFile)"
-							ElementPath="appHostGlobalLocationPath"
-							Name="image"
-							Value="[APPLICATIONROOTDIRECTORY]CGeoIPModule.dll"
-							Sequence="3" />
-
-			<util:XmlConfig Id="appHostGlobalPreConditionLocationPath"
-							File="$(var.ConfigFile)"
-							ElementPath="appHostGlobalLocationPath"
-							Name="preCondition"
-							Value="bitness64"
-							Sequence="4" />
-
-			<!-- Remove the module -->
-			<util:XmlConfig Id="removeAppHostGlobalLocationPath"
-							File="$(var.ConfigFile)"
-							Action="delete"
-							Node="element"
-							ElementPath="//configuration/location[\[] @path=''[\]]/system.webServer/globalModules"
-							VerifyPath="add[\[]@name='CGeoIPModule'[\]]"
-							On="uninstall"
-							Sequence="1" />
-		</Component>
-		<Component Id="modules" Guid="5ACBE269-A44D-4BB1-A9B3-141A9409A009" Directory="APPLICATIONROOTDIRECTORY" KeyPath="yes">
-			<Condition><![CDATA[NOT MODULESLOCATIONPATH = "ConfigurationValidationModule"]]></Condition>
-			<!-- Add module to modules-->
-			<util:XmlConfig Id="appHostModules"
-							File="$(var.ConfigFile)"
-							Action="create"
-							ElementPath="//configuration/system.webServer/modules"
-							VerifyPath="add[\[] @name='CGeoIPModule'[\]]"
-							Name="add"
-							Node="element"
-							Sequence="1"
-							On="install" />
-
-			<util:XmlConfig Id="appHostModulesName"
-							File="$(var.ConfigFile)"
-							ElementPath="appHostModules"
-							Name="name"
-							Value="CGeoIPModule"
-							Sequence="2" />
-
-			<util:XmlConfig Id="appHostModulesLockItem"
-							File="$(var.ConfigFile)"
-							ElementPath="appHostModules"
-							Name="lockItem"
-							Value="false"
-							Sequence="3" />
-
-			<!-- Remove the module -->
-			<util:XmlConfig Id="removeAppHostModules"
-							File="$(var.ConfigFile)"
-							Action="delete"
-							Node="element"
-							ElementPath="//configuration/system.webServer/modules"
-							VerifyPath="add[\[]@name='CGeoIPModule' and @lockItem='false'[\]]"
-							On="uninstall"
-							Sequence="1" />
-		</Component>
-		<Component Id="modulesLocationPath" Guid="A6AF2EBC-296F-4B6E-8B3E-7ECE57664610" Directory="APPLICATIONROOTDIRECTORY" KeyPath="yes">
-			<Condition><![CDATA[MODULESLOCATIONPATH = "ConfigurationValidationModule"]]></Condition>
-			<!-- Add module to modules-->
-			<util:XmlConfig Id="appHostModulesLocationPath"
-							File="$(var.ConfigFile)"
-							Action="create"
-							ElementPath="//configuration/location[\[] @path=''[\]]/system.webServer/modules"
-							VerifyPath="add[\[] @name='CGeoIPModule'[\]]"
-							Name="add"
-							Node="element"
-							Sequence="1"
-							On="install" />
-
-			<util:XmlConfig Id="appHostModulesNameLocationPath"
-							File="$(var.ConfigFile)"
-							ElementPath="appHostModulesLocationPath"
-							Name="name"
-							Value="CGeoIPModule"
-							Sequence="2" />
-
-			<util:XmlConfig Id="appHostModulesLockItemLocationPath"
-							File="$(var.ConfigFile)"
-							ElementPath="appHostModulesLocationPath"
-							Name="lockItem"
-							Value="false"
-							Sequence="3" />
-
-			<!-- Remove the module -->
-			<util:XmlConfig Id="removeAppHostModulesLocationPath"
-							File="$(var.ConfigFile)"
-							Action="delete"
-							Node="element"
-							ElementPath="//configuration/location[\[] @path=''[\]]/system.webServer/modules"
-							VerifyPath="add[\[]@name='CGeoIPModule' and @lockItem='false'[\]]"
-							On="uninstall"
-							Sequence="1" />
-		</Component>
-		<Component Id="ModuleConfig" Guid="67DABE54-965B-4887-ADB3-BDB28EC19B6B" Directory="APPLICATIONROOTDIRECTORY" KeyPath="yes">
+		<InstallExecuteSequence>
+			<Custom Action="InstallModule" After="InstallInitialize">NOT Installed AND NOT REMOVE</Custom>
+			<Custom Action="UninstallModule" Before="RemoveFiles">(REMOVE="ALL") AND (NOT UPGRADINGPRODUCTCODE)</Custom>
+		</InstallExecuteSequence>
+		<?if $(var.Win64) = "yes" ?>
+		<CustomAction Id="InstallModule" Execute="deferred" Impersonate="no" Directory="SCHEMADIRECTORY" ExeCommand="&quot;[System64Folder]inetsrv\appcmd.exe&quot; install module /name:&quot;CGeoIPModule&quot; /image:&quot;%ProgramFiles%\CGeoIPModule\CGeoIPModule.dll&quot; /preCondition:&quot;bitness64&quot;" />
+		<?else ?>
+		<CustomAction Id="InstallModule" Execute="deferred" Impersonate="no" Directory="SCHEMADIRECTORY" ExeCommand="&quot;[SystemFolder]inetsrv\appcmd.exe&quot; install module /name:&quot;CGeoIPModule&quot; /image:&quot;%ProgramFiles%\CGeoIPModule\CGeoIPModule.dll&quot;" />
+		<?endif ?>
+		<CustomAction Id="UninstallModule" Execute="deferred" Impersonate="no" Directory="SCHEMADIRECTORY" ExeCommand="&quot;[System64Folder]inetsrv\appcmd.exe&quot; uninstall module /module.name:&quot;CGeoIPModule&quot;" />
+		<Component Id="ModuleConfig" Guid="21A2EDF5-B38C-4CCB-880E-9C01F3CC1D58" Directory="SCHEMADIRECTORY" KeyPath="yes">
 			<CreateFolder />
 			<!-- The module config -->
 			<util:XmlConfig Id="appHostEntry"

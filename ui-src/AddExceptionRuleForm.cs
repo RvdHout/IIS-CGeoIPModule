@@ -103,16 +103,7 @@ namespace CGeoIPModule
         /// <param name="e">Not used</param>
         private void BOk_Click(object sender, EventArgs e)
         {
-            string family = "ipv4";
-
-            if (ipv4Checkbox.Checked)
-            {
-                family = "ipv4";
-            }
-            if (ipv6Checkbox.Checked)
-            {
-                family = "ipv6";
-            }
+            string family = ipv4Checkbox.Checked ? "ipv4" : "ipv6";
 
             if (RBSpecificIpAddress.Checked)
             {
