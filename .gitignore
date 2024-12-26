@@ -4,6 +4,8 @@ src/.vs/*
 src/CGeoIPModule/*
 src/x86/*
 src/x64/*
+src/Release/*
+src/Win32/*
 ui-src/.vs/*
 ui-src/obj/*
 ui-src/bin/*

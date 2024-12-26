@@ -29,8 +29,6 @@
 							Type="raw" />
 		</Property>
 
-
-		<!-- Define the condition -->
 		<Condition Message="It would appear you do not have IIS installed!">
 			<![CDATA[IISINSTALLED]]>
 		</Condition>
@@ -55,7 +53,7 @@
 		<Directory Id="TARGETDIR" Name="SourceDir">
 			<?if $(var.Win64) = "yes" ?>
 			<Directory Id="ProgramFiles64Folder">
-				<Directory Id="APPLICATIONROOTDIRECTORY" Name="CGeoIPModule" />
+				<Directory Id="APPLICATIONROOTDIRECTORY" Name="CGeoIPModule"/>
 			</Directory>
 			<Directory Id="System64Folder">
 				<Directory Id="INETSVC64FOLDER" Name="inetsrv">
@@ -93,10 +91,19 @@
 			</Component>
 		</DirectoryRef>
 		<DirectoryRef Id="APPLICATIONROOTDIRECTORY">
-			<!-- Component for CGeoIPModule.dll -->
+		<!-- Component for CGeoIPModule.dll -->
+		<?if $(var.Win64) = "yes" ?>
 			<Component Id="CGeoIPModule" Guid="696E8B09-B421-45A9-B003-771C622D9DD6">
-				<File Id="CGeoIPModule.dll" Source="..\src\$(sys.BUILDARCH)\$(var.Configuration)\CGeoIPModule.dll" KeyPath="yes" Checksum="yes" />
+				<File Id="CGeoIPModule.dll" Source="..\src\x64\$(var.Configuration)\CGeoIPModule.dll" KeyPath="yes" Checksum="yes" />
 			</Component>
+			<Component Id="CGeoIPModulex86" Guid="9D22088F-212C-4951-8A28-A0D91AD4B75B">
+				<File Id="CGeoIPModulex86.dll" Source="..\src\x86\$(var.Configuration)\CGeoIPModule.dll" Name="CGeoIPModulex86.dll" KeyPath="yes" Checksum="yes" />
+			</Component>
+		<?else ?>
+			<Component Id="CGeoIPModule" Guid="68921042-7473-400F-9760-C1B8C95DCEE1">
+				<File Id="CGeoIPModule.dll" Source="..\src\x86\$(var.Configuration)\CGeoIPModule.dll" KeyPath="yes" Checksum="yes" />
+			</Component>
+		<?endif ?>
 		</DirectoryRef>
 	</Fragment>
 
@@ -107,6 +114,10 @@
 			<ComponentRef Id="CGeoIPModuleSchema" />
 
 			<ComponentRef Id="CGeoIPModule" />
+
+			<?if $(var.Win64) = "yes" ?>
+			<ComponentRef Id="CGeoIPModulex86" />
+			<?endif ?>
 			<ComponentRef Id="GeoIPModuleUI" />
 			<!-- Admin Module Configuration -->
 			<ComponentRef Id="ModuleConfig" />
@@ -117,13 +128,19 @@
 		<InstallExecuteSequence>
 			<Custom Action="InstallModule" After="InstallInitialize">NOT Installed AND NOT REMOVE</Custom>
 			<Custom Action="UninstallModule" Before="RemoveFiles">(REMOVE="ALL") AND (NOT UPGRADINGPRODUCTCODE)</Custom>
+			<?if $(var.Win64) = "yes" ?>
+			<Custom Action="InstallModulex86" After="InstallInitialize">NOT Installed AND NOT REMOVE</Custom>
+			<Custom Action="UninstallModulex86" Before="RemoveFiles">(REMOVE="ALL") AND (NOT UPGRADINGPRODUCTCODE)</Custom>
+			<?endif ?>
 		</InstallExecuteSequence>
 		<?if $(var.Win64) = "yes" ?>
-		<CustomAction Id="InstallModule" Execute="deferred" Impersonate="no" Directory="SCHEMADIRECTORY" ExeCommand="&quot;[System64Folder]inetsrv\appcmd.exe&quot; install module /name:&quot;CGeoIPModule&quot; /image:&quot;%ProgramFiles%\CGeoIPModule\CGeoIPModule.dll&quot; /preCondition:&quot;bitness64&quot;" />
+		<CustomAction Id="InstallModule" Execute="deferred" Impersonate="no" Directory="SCHEMADIRECTORY" ExeCommand="&quot;[System64Folder]inetsrv\appcmd.exe&quot; install module /name:&quot;CGeoIPModule&quot; /image:&quot;[APPLICATIONROOTDIRECTORY]CGeoIPModule.dll&quot; /preCondition:&quot;bitness64&quot; /lock:&quot;false&quot;" />
+		<CustomAction Id="InstallModulex86" Execute="deferred" Impersonate="no" Directory="SCHEMADIRECTORY" ExeCommand="&quot;[SystemFolder]inetsrv\appcmd.exe&quot; install module /name:&quot;CGeoIPModule (32-bit)&quot; /image:&quot;[APPLICATIONROOTDIRECTORY]CGeoIPModulex86.dll&quot; /preCondition:&quot;bitness32&quot; /lock:&quot;false&quot;" />
 		<?else ?>
-		<CustomAction Id="InstallModule" Execute="deferred" Impersonate="no" Directory="SCHEMADIRECTORY" ExeCommand="&quot;[SystemFolder]inetsrv\appcmd.exe&quot; install module /name:&quot;CGeoIPModule&quot; /image:&quot;%ProgramFiles%\CGeoIPModule\CGeoIPModule.dll&quot;" />
+		<CustomAction Id="InstallModule" Execute="deferred" Impersonate="no" Directory="SCHEMADIRECTORY" ExeCommand="&quot;[SystemFolder]inetsrv\appcmd.exe&quot; install module /name:&quot;CGeoIPModule&quot; /image:&quot;[APPLICATIONROOTDIRECTORY]CGeoIPModule.dll&quot; /lock:&quot;false&quot;" />
 		<?endif ?>
 		<CustomAction Id="UninstallModule" Execute="deferred" Impersonate="no" Directory="SCHEMADIRECTORY" ExeCommand="&quot;[System64Folder]inetsrv\appcmd.exe&quot; uninstall module /module.name:&quot;CGeoIPModule&quot;" />
+		<CustomAction Id="UninstallModulex86" Execute="deferred" Impersonate="no" Directory="SCHEMADIRECTORY" ExeCommand="&quot;[SystemFolder]inetsrv\appcmd.exe&quot; uninstall module /module.name:&quot;CGeoIPModule (32-bit)&quot;" />
 		<Component Id="ModuleConfig" Guid="21A2EDF5-B38C-4CCB-880E-9C01F3CC1D58" Directory="SCHEMADIRECTORY" KeyPath="yes">
 			<CreateFolder />
 			<!-- The module config -->

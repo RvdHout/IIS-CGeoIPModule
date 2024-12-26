@@ -14,9 +14,11 @@ Server variable `GEOIP_COUNTRY` will contain the iso country code on successful 
 - Get libmaxminddb
 ```
 git clone --recursive https://github.com/maxmind/libmaxminddb
-mkdir libmaxminddb\build && cd libmaxminddb\build
-cmake -DMSVC_STATIC_RUNTIME=ON -DBUILD_SHARED_LIBS=OFF -A x64 .. // or remove -A x64 to build x86 lib
-cmake --build . --config Release --target install
+cd libmaxminddb && mkdir x64 && mkdir x86
+cd x64 && cmake -DMSVC_STATIC_RUNTIME=ON -DBUILD_SHARED_LIBS=OFF -A x64 ..
+cd ../x86 && cmake -DMSVC_STATIC_RUNTIME=ON -DBUILD_SHARED_LIBS=OFF -A Win32 ..
+cd .. && cmake --build ./x64 --config Release --target install
+cmake --build ./x86 --config Release --target install
 ```
 
 - Download and install Windows SDK.
