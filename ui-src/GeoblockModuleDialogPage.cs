@@ -157,13 +157,9 @@ namespace CGeoIPModule
             item5.Value = "Close";
             this.comboBoxDenyAction.Items.Add(item5);
             ComboboxItem item6 = new ComboboxItem();
-            item6.Text = "Close";
-            item6.Value = "Close";
+            item6.Text = "I'm a teapot";
+            item6.Value = "Teapot";
             this.comboBoxDenyAction.Items.Add(item6);
-            ComboboxItem item7 = new ComboboxItem();
-            item7.Text = "I'm a teapot";
-            item7.Value = "Teapot";
-            this.comboBoxDenyAction.Items.Add(item7);
             ComboboxItem item8 = new ComboboxItem();
             item8.Text = "Gone";
             item8.Value = "Gone";
