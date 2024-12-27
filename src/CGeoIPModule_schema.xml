@@ -11,6 +11,7 @@ Dont forget to add an entry in applicationHost.config...
 <configSchema>
     <sectionSchema name="system.webServer/CGeoIPModule">
         <attribute name="enabled" type="bool" defaultValue="false"/>
+        <attribute name="remoteAddr" type="bool" defaultValue="false"/>
         <attribute name="path" type="string" defaultValue=""/>
         <attribute name="allowListed" type="bool" defaultValue="true"/>
         <attribute name="action" type="string" defaultValue="Forbidden"/>

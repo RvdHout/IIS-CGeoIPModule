@@ -38,6 +38,11 @@ namespace CGeoIPModule
         public bool Enabled { get; set; }
 
         /// <summary>
+        /// Specifies whether or not to use REMOTE_ADDR to obtain client ip
+        /// </summary>
+        public bool RemoteAddr { get; set; }
+
+        /// <summary>
         /// Specifies the Deny Action Type
         /// </summary>
         public string Action { get; set; }

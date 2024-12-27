@@ -559,6 +559,50 @@ BOOL Functions::GetIsEnabled(IN IHttpContext* pHttpContext)
     return isEnabled;
 }
 
+BOOL Functions::CheckRemoteAddr(IN IHttpContext* pHttpContext)
+{
+    BOOL checkRemoteAddr = FALSE;
+    IAppHostElement* pElement = NULL;
+    HRESULT hr = GetConfig(pHttpContext, &pElement);
+    if (FAILED(hr))
+    {
+#ifdef _DEBUG
+        WriteFileLogMessage("[Functions::CheckRemoteAddr]: GetConfig failed");
+        _com_error err(hr);
+        LPCTSTR errMsg = err.ErrorMessage();
+        WriteFileLogMessage(CStringA(errMsg));
+#endif
+        return FALSE;
+    }
+
+    BSTR bstrRemoteAddr = SysAllocString(L"remoteAddr");
+    if (bstrRemoteAddr == NULL)
+    {
+#ifdef _DEBUG
+        WriteFileLogMessage("[Functions::CheckRemoteAddr]: bstrRemoteAddr alloc failed");
+        _com_error err(hr);
+        LPCTSTR errMsg = err.ErrorMessage();
+        WriteFileLogMessage(CStringA(errMsg));
+#endif
+        pElement->Release();
+        return FALSE;
+    }
+
+    hr = GetBooleanPropertyValueFromElement(pElement, bstrRemoteAddr, &checkRemoteAddr);
+    SysFreeString(bstrRemoteAddr);
+    if (FAILED(hr))
+    {
+#ifdef _DEBUG
+        WriteFileLogMessage("[Functions::CheckRemoteAddr]: GetBooleanPropertyValueFromElement failed");
+        _com_error err(hr);
+        LPCTSTR errMsg = err.ErrorMessage();
+        WriteFileLogMessage(CStringA(errMsg));
+#endif
+    }
+    pElement->Release();
+    return checkRemoteAddr;
+}
+
 /// <summary>
 /// pick deny response, default to Close on failure
 /// </summary>

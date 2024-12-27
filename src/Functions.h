@@ -15,8 +15,8 @@
 #include <string>
 #include <maxminddb.h>
 #include <chrono>
+#include <comdef.h> // for _com_error and _bstr_t
 #ifdef _DEBUG
-#include <comdef.h> // for _com_error
 #include <atlstr.h>
 #endif
 #include "RulesStruct.h"
@@ -34,6 +34,8 @@ public:
     BOOL IsCountryCodeListed(IN IHttpContext* pHttpContext, IN BSTR CountryCode);
 
     BOOL GetIsEnabled(IN IHttpContext* pW3Context);
+
+    BOOL CheckRemoteAddr(IN IHttpContext* pHttpContext);
 
     CHAR* GetMMDBPath(IN IHttpContext* pW3Context);
 

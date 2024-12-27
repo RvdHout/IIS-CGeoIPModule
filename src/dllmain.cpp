@@ -45,6 +45,30 @@ public:
             return RQ_NOTIFICATION_CONTINUE;
         }
 
+        // Perhaps you are using a module like CloudflareProxyTrust and need to base it off the actual value of REMOTE_ADDR?
+        if (myFunctions.CheckRemoteAddr(pHttpContext))
+        {
+            DWORD val;
+            PCWSTR remoteAddr;
+            HRESULT hr = pHttpContext->GetServerVariable("REMOTE_ADDR", &remoteAddr, &val);
+            _bstr_t b(remoteAddr);
+            PCSTR pcstrRemoteAddr = b;
+#ifdef _DEBUG
+            myFunctions.WriteFileLogMessage("Checking REMOTE_ADDR variable instead");
+            myFunctions.WriteFileLogMessage(pcstrRemoteAddr);
+#endif
+            INT family = ipFunctions.GetIpVersion(pcstrRemoteAddr);
+#ifdef _DEBUG
+            if (family == AF_INET)
+                myFunctions.WriteFileLogMessage("family was IPv4");
+            if (family == AF_INET6)
+                myFunctions.WriteFileLogMessage("family was IPv6");
+            if (family != AF_INET && family != AF_INET6) {
+                myFunctions.WriteFileLogMessage("family failed");
+            }
+#endif
+            pSockAddr = family == AF_INET6 || family == AF_INET ? ipFunctions.StringToPSOCK(pcstrRemoteAddr, family) : pSockAddr ;
+        }
         // get exception rules from config, return only matching family
         const std::vector<ExceptionRules> rules = myFunctions.exceptionRules(pHttpContext, pSockAddr);
         // check exception rules

@@ -56,9 +56,10 @@ namespace CGeoIPModule
 
             PropertyBag result = new PropertyBag();
             result.Add(0, config.Enabled);
-            result.Add(1, config.Action);
-            result.Add(2, config.Path);
-            result.Add(3, config.Allow);
+            result.Add(1, config.RemoteAddr);
+            result.Add(2, config.Action);
+            result.Add(3, config.Path);
+            result.Add(4, config.Allow);
 
 
 #if DEBUG
@@ -71,7 +72,7 @@ namespace CGeoIPModule
                 item.Add(0, country.Code);
                 countries.Add(item);
             }
-            result.Add(4, countries);
+            result.Add(5, countries);
 
 #if DEBUG
             DbgWrite("GetGeoblockConfiguration() adding exception rules");
@@ -89,7 +90,7 @@ namespace CGeoIPModule
                 item.Add(3, exceptionRule.Family);
                 exceptionRules.Add(item);
             }
-            result.Add(5, exceptionRules);
+            result.Add(6, exceptionRules);
 #if DEBUG
             DbgWrite("GetGeoblockConfiguration() end");
 #endif
@@ -112,17 +113,18 @@ namespace CGeoIPModule
             GeoblockConfigurationSection config = (GeoblockConfigurationSection)ManagementUnit.Configuration.GetSection(GeoblockConfigurationSection.SectionName, typeof(GeoblockConfigurationSection));
 
             config.Enabled = (bool)updatedGeoblockConfiguration[0];
-            config.Action = (string)updatedGeoblockConfiguration[1];
-            config.Path = (string)updatedGeoblockConfiguration[2];
-            config.Allow = (bool)updatedGeoblockConfiguration[3];
+            config.RemoteAddr = (bool)updatedGeoblockConfiguration[1];
+            config.Action = (string)updatedGeoblockConfiguration[2];
+            config.Path = (string)updatedGeoblockConfiguration[3];
+            config.Allow = (bool)updatedGeoblockConfiguration[4];
             config.CountryCodes.Clear();
-            ArrayList countries = (ArrayList)updatedGeoblockConfiguration[4];
+            ArrayList countries = (ArrayList)updatedGeoblockConfiguration[5];
             foreach (PropertyBag item in countries)
             {
                 config.CountryCodes.Add((string)item[0]);
             }
             config.ExceptionRules.Clear();
-            ArrayList exceptionRules = (ArrayList)updatedGeoblockConfiguration[5];
+            ArrayList exceptionRules = (ArrayList)updatedGeoblockConfiguration[6];
             foreach (PropertyBag item in exceptionRules)
             {
                 config.ExceptionRules.Add((bool)item[0], (string)item[1], (string)item[2], (string)item[3]);

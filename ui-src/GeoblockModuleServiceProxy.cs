@@ -60,15 +60,16 @@ namespace CGeoIPModule
 #endif
 
             result.Enabled = (bool)config[0];
-            result.Action = (string)config[1];
-            result.Path = (string)config[2];
-            result.AllowedMode = (bool)config[3];
+            result.RemoteAddr = (bool)config[1];
+            result.Action = (string)config[2];
+            result.Path = (string)config[3];
+            result.AllowedMode = (bool)config[4];
 #if DEBUG
             DbgWrite("GetGeoblockConfiguration() assigned values");
 #endif
 
             result.CountryCodes = new List<Country>();
-            ArrayList countries = (ArrayList)config[4];
+            ArrayList countries = (ArrayList)config[5];
             foreach (PropertyBag item in countries)
             {
                 result.CountryCodes.Add(new Country((string)item[0], null));
@@ -78,7 +79,7 @@ namespace CGeoIPModule
             DbgWrite("GetGeoblockConfiguration() assigned country codes");
 #endif
             result.ExceptionRules = new List<ExceptionRule>();
-            ArrayList exceptionRules = (ArrayList)config[5];
+            ArrayList exceptionRules = (ArrayList)config[6];
             foreach (PropertyBag item in exceptionRules)
             {
                 result.ExceptionRules.Add(new ExceptionRule((bool)item[0], (string)item[1], (string)item[2], (string)item[3]));
@@ -95,9 +96,10 @@ namespace CGeoIPModule
         {
             PropertyBag config = new PropertyBag();
             config.Add(0, updatedGeoblockConfiguration.Enabled);
-            config.Add(1, updatedGeoblockConfiguration.Action);
-            config.Add(2, updatedGeoblockConfiguration.Path);
-            config.Add(3, updatedGeoblockConfiguration.AllowedMode);
+            config.Add(1, updatedGeoblockConfiguration.RemoteAddr);
+            config.Add(2, updatedGeoblockConfiguration.Action);
+            config.Add(3, updatedGeoblockConfiguration.Path);
+            config.Add(4, updatedGeoblockConfiguration.AllowedMode);
 
             ArrayList countries = new ArrayList();
             foreach (Country country in updatedGeoblockConfiguration.CountryCodes)
@@ -106,7 +108,7 @@ namespace CGeoIPModule
                 item.Add(0, country.CountryCode);
                 countries.Add(item);
             }
-            config.Add(4, countries);
+            config.Add(5, countries);
 
             ArrayList exceptionRules = new ArrayList();
             foreach (ExceptionRule exceptionRule in updatedGeoblockConfiguration.ExceptionRules)
@@ -118,7 +120,7 @@ namespace CGeoIPModule
                 item.Add(3, exceptionRule.Family);
                 exceptionRules.Add(item);
             }
-            config.Add(5, exceptionRules);
+            config.Add(6, exceptionRules);
 
             Invoke("UpdateGeoblockConfiguration", config);
         }

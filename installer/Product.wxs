@@ -139,8 +139,8 @@
 		<?else ?>
 		<CustomAction Id="InstallModule" Execute="deferred" Impersonate="no" Directory="SCHEMADIRECTORY" ExeCommand="&quot;[SystemFolder]inetsrv\appcmd.exe&quot; install module /name:&quot;CGeoIPModule&quot; /image:&quot;[APPLICATIONROOTDIRECTORY]CGeoIPModule.dll&quot; /lock:&quot;false&quot;" />
 		<?endif ?>
-		<CustomAction Id="UninstallModule" Execute="deferred" Impersonate="no" Directory="SCHEMADIRECTORY" ExeCommand="&quot;[System64Folder]inetsrv\appcmd.exe&quot; uninstall module /module.name:&quot;CGeoIPModule&quot;" />
-		<CustomAction Id="UninstallModulex86" Execute="deferred" Impersonate="no" Directory="SCHEMADIRECTORY" ExeCommand="&quot;[SystemFolder]inetsrv\appcmd.exe&quot; uninstall module /module.name:&quot;CGeoIPModule (32-bit)&quot;" />
+		<CustomAction Id="UninstallModule" Return="ignore" Execute="deferred" Impersonate="no" Directory="SCHEMADIRECTORY" ExeCommand="&quot;[System64Folder]inetsrv\appcmd.exe&quot; uninstall module /module.name:&quot;CGeoIPModule&quot;" />
+		<CustomAction Id="UninstallModulex86" Return="ignore" Execute="deferred" Impersonate="no" Directory="SCHEMADIRECTORY" ExeCommand="&quot;[SystemFolder]inetsrv\appcmd.exe&quot; uninstall module /module.name:&quot;CGeoIPModule (32-bit)&quot;" />
 		<Component Id="ModuleConfig" Guid="21A2EDF5-B38C-4CCB-880E-9C01F3CC1D58" Directory="SCHEMADIRECTORY" KeyPath="yes">
 			<CreateFolder />
 			<!-- The module config -->

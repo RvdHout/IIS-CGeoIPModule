@@ -53,6 +53,7 @@ namespace CGeoIPModule
 
         //Interface elements
         private System.Windows.Forms.CheckBox enabledCB;
+        private System.Windows.Forms.CheckBox remoteAddrCB;
         private System.Windows.Forms.ComboBox comboBoxDenyAction;
         private System.Windows.Forms.RadioButton allowedRB;
         private System.Windows.Forms.RadioButton deniedRB;
@@ -102,6 +103,7 @@ namespace CGeoIPModule
         private void Initialize()
         {
             this.enabledCB = new System.Windows.Forms.CheckBox();
+            this.remoteAddrCB = new System.Windows.Forms.CheckBox();
             this.allowedRB = new System.Windows.Forms.RadioButton();
             this.deniedRB = new System.Windows.Forms.RadioButton();
             this.geoIpFilepathTB = new System.Windows.Forms.TextBox();
@@ -127,14 +129,20 @@ namespace CGeoIPModule
             this.enabledCB.Text = "Enable geoblock module";
             this.enabledCB.CheckedChanged += new EventHandler(enabledCB_CheckedChanged);
 
+            this.remoteAddrCB.AutoSize = true;
+            this.remoteAddrCB.Left = 5;
+            this.remoteAddrCB.Top = 35;
+            this.remoteAddrCB.Text = "Use REMOTE_ADDR Server variable";
+            this.remoteAddrCB.CheckedChanged += new EventHandler(enabledCB_CheckedChanged);
+
             this.DenyActionL.AutoSize = true;
             this.DenyActionL.Left = 5;
-            this.DenyActionL.Top = 40;
+            this.DenyActionL.Top = 60;
             this.DenyActionL.Text = "Deny Action Type";
 
             this.comboBoxDenyAction.AutoSize = true;
             this.comboBoxDenyAction.Left = 5;
-            this.comboBoxDenyAction.Top = 60;
+            this.comboBoxDenyAction.Top = 80;
             this.comboBoxDenyAction.Name = "comboBoxDenyAction";
             ComboboxItem item1 = new ComboboxItem();
             item1.Text = "Unauthorized";
@@ -169,18 +177,18 @@ namespace CGeoIPModule
 
             this.geoIpFilepathL.AutoSize = true;
             this.geoIpFilepathL.Left = 5;
-            this.geoIpFilepathL.Top = 90;
+            this.geoIpFilepathL.Top = 110;
             this.geoIpFilepathL.Text = "GeoIP2 Country Database";
             
             this.geoIpFilepathTB.Left = 5;
-            this.geoIpFilepathTB.Top = 110;
+            this.geoIpFilepathTB.Top = 130;
             this.geoIpFilepathTB.Width = 279;
             this.geoIpFilepathTB.Height = 20;
             this.geoIpFilepathTB.TextChanged += new EventHandler(geoIpFilepathTB_TextChanged);
             this.geoIpFilepathTB.Validating += new CancelEventHandler(geoIpFilepathTB_Validating);
 
             this.geoIpFilepathB.Left = 209;
-            this.geoIpFilepathB.Top = 136;
+            this.geoIpFilepathB.Top = 156;
             this.geoIpFilepathB.Width = 75;
             this.geoIpFilepathB.Height = 23;
             this.geoIpFilepathB.Text = "Select file";
@@ -188,24 +196,24 @@ namespace CGeoIPModule
 
             this.geoIpFileinfoL.AutoSize = true;
             this.geoIpFileinfoL.Left = 5;
-            this.geoIpFileinfoL.Top = 140;
+            this.geoIpFileinfoL.Top = 160;
             this.geoIpFileinfoL.Text = string.Empty;
 
             this.allowedRB.AutoSize = true;
             this.allowedRB.Checked = true;
             this.allowedRB.Left = 5;
-            this.allowedRB.Top = 160;
+            this.allowedRB.Top = 180;
             this.allowedRB.Text = "Allow access for";
             this.allowedRB.CheckedChanged += new EventHandler(allowedRB_CheckedChanged);
             
             this.deniedRB.AutoSize = true;
             this.deniedRB.Left = 5;
-            this.deniedRB.Top = 180;
+            this.deniedRB.Top = 200;
             this.deniedRB.Text = "Deny access for";
             this.deniedRB.CheckedChanged += new EventHandler(deniedRB_CheckedChanged);
 
             this.selectedCountryCodesLB.Left = 5;
-            this.selectedCountryCodesLB.Top = 200;
+            this.selectedCountryCodesLB.Top = 220;
             this.selectedCountryCodesLB.Width = 279;
             this.selectedCountryCodesLB.Height = 184;
             this.selectedCountryCodesLB.CheckOnClick = true;
@@ -221,7 +229,7 @@ namespace CGeoIPModule
 
             this.exceptionsL.AutoSize = true;
             this.exceptionsL.Left = 5;
-            this.exceptionsL.Top = 385;
+            this.exceptionsL.Top = 405;
             this.exceptionsL.Text = "Exception rules";
 
             ((System.ComponentModel.ISupportInitialize)(this.exceptionRulesDGV)).BeginInit();
@@ -246,7 +254,7 @@ namespace CGeoIPModule
             this.exceptionRulesDGV.Width = 279;
             this.exceptionRulesDGV.Height = 184;
             this.exceptionRulesDGV.Left = 5;
-            this.exceptionRulesDGV.Top = 405;
+            this.exceptionRulesDGV.Top = 425;
             this.exceptionRulesDGV.MouseDown += new System.Windows.Forms.MouseEventHandler(this.ExceptionRules_MouseDown);
             this.exceptionRulesDGV.UserDeletingRow += new System.Windows.Forms.DataGridViewRowCancelEventHandler(this.ExceptionRules_UserDeletingRow);
             this.exceptionRulesDGV.SelectionChanged += new EventHandler(exceptionRulesDGV_SelectionChanged);
@@ -277,6 +285,7 @@ namespace CGeoIPModule
             this.removeEntryM.Click += new System.EventHandler(this.RemoveEntry_Click);
 
             Controls.Add(enabledCB);
+            Controls.Add(remoteAddrCB);
             Controls.Add(comboBoxDenyAction);
             Controls.Add(allowedRB);
             Controls.Add(deniedRB);
@@ -371,6 +380,7 @@ namespace CGeoIPModule
         void DisplayConfiguration()
         {
             enabledCB.Checked = this.moduleConfiguration.Enabled;
+            remoteAddrCB.Checked = this.moduleConfiguration.RemoteAddr;
             for (int i = 0; i < comboBoxDenyAction.Items.Count; i++)
             {
                 ComboboxItem ci = (ComboboxItem)comboBoxDenyAction.Items[i];
@@ -434,6 +444,7 @@ namespace CGeoIPModule
             if (this.isValidDatabase)
             {
                 this.moduleConfiguration.Enabled = !string.IsNullOrEmpty(geoIpFilepathTB.Text.Trim()) && System.IO.File.Exists(geoIpFilepathTB.Text.Trim()) ? enabledCB.Checked : false;
+                this.moduleConfiguration.RemoteAddr = remoteAddrCB.Checked;
                 this.moduleConfiguration.Action = (comboBoxDenyAction.SelectedItem as ComboboxItem).Value.ToString();
                 this.moduleConfiguration.AllowedMode = allowedRB.Checked;
                 this.moduleConfiguration.Path = geoIpFilepathTB.Text;

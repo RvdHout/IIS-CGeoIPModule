@@ -49,6 +49,15 @@ namespace CGeoIPModule
         }
 
         /// <summary>
+        /// Specifies whether or not to use REMOTE_ADDR server variable to obtain client IP
+        /// </summary>
+        public bool RemoteAddr
+        {
+            get { return (bool)base["remoteAddr"]; }
+            set { base["remoteAddr"] = (bool)value; }
+        }
+
+        /// <summary>
         /// Specifies the Deny Action Type
         /// </summary>
         public string Action
