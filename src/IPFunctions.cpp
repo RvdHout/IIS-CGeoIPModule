@@ -148,10 +148,10 @@ BOOL IPFunctions::isIpInExceptionRules(PSOCKADDR pSockAddr, const std::vector<Ex
             try {
                 maskInt = std::stoi(mask);
             }
-            catch (const std::invalid_argument& e) {
+            catch (const std::invalid_argument&) {
                 continue;
             }
-            catch (const std::out_of_range& e) {
+            catch (const std::out_of_range&) {
                 continue;
             }
 
@@ -169,23 +169,25 @@ BOOL IPFunctions::isIpInExceptionRules(PSOCKADDR pSockAddr, const std::vector<Ex
     return FALSE;
 }
 
-INT IPFunctions::GetIpVersion(PCSTR ipAddress)
+HRESULT IPFunctions::GetIpVersion(IN PCSTR ipAddress, OUT INT* pFamily)
 {
     struct sockaddr_in sa;
     struct sockaddr_in6 sa6;
 
     if (inet_pton(AF_INET, ipAddress, &(sa.sin_addr)) == 1) {
-        return AF_INET;
+        *pFamily = AF_INET;
+        return S_OK;
     }
 
     if (inet_pton(AF_INET6, ipAddress, &(sa6.sin6_addr)) == 1) {
-        return AF_INET6;
+        *pFamily = AF_INET6;
+        return S_OK;
     }
 
-    return 69;
+    return E_INVALIDARG;
 }
 
-PSOCKADDR IPFunctions::StringToPSOCK(IN PCSTR string, IN INT family)
+HRESULT IPFunctions::StringToPSOCK(IN PCSTR string, IN INT family, OUT PSOCKADDR* ppOutAddr)
 {
     if (family == AF_INET)
     {
@@ -193,7 +195,7 @@ PSOCKADDR IPFunctions::StringToPSOCK(IN PCSTR string, IN INT family)
 
         if (pSockAddr == nullptr)
         {
-            return nullptr; // failed to allocate memory
+            return E_OUTOFMEMORY; // failed to allocate memory
         }
 
         // Zero out the structure (important for safety?)
@@ -204,18 +206,19 @@ PSOCKADDR IPFunctions::StringToPSOCK(IN PCSTR string, IN INT family)
         // Convert the IP address string into the sockaddr_in structure
         if (inet_pton(AF_INET, string, &(((struct sockaddr_in*)pSockAddr)->sin_addr)) != 1)
         {
-            // If inet_pton fails, free memory and return nullptr
+            // If inet_pton fails, free memory and return
             free(pSockAddr);
-            return nullptr;
+            return E_FAIL;
         }
-        return pSockAddr;
+        *ppOutAddr = pSockAddr;
+        return S_OK;
     }
     else if (family == AF_INET6)
     {
         PSOCKADDR pSockAddr = (PSOCKADDR)malloc(sizeof(struct sockaddr_in6));
         if (pSockAddr == nullptr)
         {
-            return nullptr;
+            return E_OUTOFMEMORY;
         }
 
         ZeroMemory(pSockAddr, sizeof(struct sockaddr_in6));
@@ -224,10 +227,11 @@ PSOCKADDR IPFunctions::StringToPSOCK(IN PCSTR string, IN INT family)
         if (inet_pton(AF_INET6, string, &(((struct sockaddr_in6*)pSockAddr)->sin6_addr)) != 1)
         {
             free(pSockAddr);
-            return nullptr;
+            return E_FAIL;
         }
-        return pSockAddr;
+        *ppOutAddr = pSockAddr;
+        return S_OK;
     }
 
-    return nullptr;
+    return E_INVALIDARG;
 }

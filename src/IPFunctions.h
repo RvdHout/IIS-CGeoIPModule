@@ -26,9 +26,9 @@ public:
 
     BOOL isIpInExceptionRules(PSOCKADDR pSockAddr, const std::vector<ExceptionRules>& rules, BOOL* pAllowed);
 
-    INT GetIpVersion(PCSTR ipAddress);
+    HRESULT GetIpVersion(IN PCSTR ipAddress, OUT INT* pFamily);
 
-    PSOCKADDR StringToPSOCK(IN PCSTR string, IN INT family);
+    HRESULT StringToPSOCK(IN PCSTR string, IN INT family, OUT PSOCKADDR* ppOutAddr);
 
 private:
     VOID GenerateIpv6Mask(int prefixLength, struct in6_addr* mask);

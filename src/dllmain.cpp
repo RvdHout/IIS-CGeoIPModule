@@ -36,6 +36,7 @@ public:
         PSOCKADDR pSockAddr = pHttpRequest->GetRemoteAddress();
         Functions myFunctions;
         IPFunctions ipFunctions;
+        BOOL checkedRemoteAddr = FALSE;
 
         if (!myFunctions.GetIsEnabled(pHttpContext))
         {
@@ -51,23 +52,22 @@ public:
             DWORD val;
             PCWSTR remoteAddr;
             HRESULT hr = pHttpContext->GetServerVariable("REMOTE_ADDR", &remoteAddr, &val);
-            _bstr_t b(remoteAddr);
-            PCSTR pcstrRemoteAddr = b;
+            if (SUCCEEDED(hr)) {
+                _bstr_t b(remoteAddr);
+                PCSTR pcstrRemoteAddr = b;
 #ifdef _DEBUG
-            myFunctions.WriteFileLogMessage("Checking REMOTE_ADDR variable instead");
-            myFunctions.WriteFileLogMessage(pcstrRemoteAddr);
+                myFunctions.WriteFileLogMessage("Checking REMOTE_ADDR variable instead");
+                myFunctions.WriteFileLogMessage(pcstrRemoteAddr);
 #endif
-            INT family = ipFunctions.GetIpVersion(pcstrRemoteAddr);
-#ifdef _DEBUG
-            if (family == AF_INET)
-                myFunctions.WriteFileLogMessage("family was IPv4");
-            if (family == AF_INET6)
-                myFunctions.WriteFileLogMessage("family was IPv6");
-            if (family != AF_INET && family != AF_INET6) {
-                myFunctions.WriteFileLogMessage("family failed");
+                INT family;
+                hr = ipFunctions.GetIpVersion(pcstrRemoteAddr, &family);
+                if (SUCCEEDED(hr)) {
+                    hr = ipFunctions.StringToPSOCK(pcstrRemoteAddr, family, &pSockAddr);
+                    if (SUCCEEDED(hr)) {
+                        checkedRemoteAddr = TRUE;
+                    }
+                }
             }
-#endif
-            pSockAddr = family == AF_INET6 || family == AF_INET ? ipFunctions.StringToPSOCK(pcstrRemoteAddr, family) : pSockAddr ;
         }
         // get exception rules from config, return only matching family
         const std::vector<ExceptionRules> rules = myFunctions.exceptionRules(pHttpContext, pSockAddr);
@@ -80,6 +80,7 @@ public:
 #ifdef _DEBUG
                 myFunctions.WriteFileLogMessage("IP allowed by exception rule");
 #endif
+                if (checkedRemoteAddr) free(pSockAddr);
                 return RQ_NOTIFICATION_CONTINUE;
             }
             else {
@@ -87,6 +88,7 @@ public:
                 myFunctions.WriteFileLogMessage("IP denied by exception rule");
 #endif
                 myFunctions.DenyAction(pHttpContext);
+                if (checkedRemoteAddr) free(pSockAddr);
                 return RQ_NOTIFICATION_FINISH_REQUEST;
             }
         }
@@ -138,7 +140,8 @@ public:
             myFunctions.DenyAction(pHttpContext);
             reqStatus = RQ_NOTIFICATION_FINISH_REQUEST;
         }
-        
+
+        if(checkedRemoteAddr) free(pSockAddr);
         return reqStatus;
     }
 };
