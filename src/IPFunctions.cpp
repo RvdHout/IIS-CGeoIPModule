@@ -120,9 +120,9 @@ BOOL IPFunctions::isIpInExceptionRules(PSOCKADDR pSockAddr, const std::vector<Ex
     // so we can loop through each rule and check if the connecting ip is within the range
 
     for (const auto& rule : rules) {
-        const char* family = rule.family.c_str();
-        const char* address = rule.address.c_str();
-        const char* mask = rule.mask.c_str();
+        LPCSTR family = rule.family.c_str();
+        LPCSTR address = rule.address.c_str();
+        LPCSTR mask = rule.mask.c_str();
         *pAllowed = rule.mode;
 
         if (pSockAddr->sa_family == AF_INET) {
@@ -172,12 +172,13 @@ BOOL IPFunctions::isIpInExceptionRules(PSOCKADDR pSockAddr, const std::vector<Ex
 HRESULT IPFunctions::GetIpVersion(IN PCSTR ipAddress, OUT INT* pFamily)
 {
     struct sockaddr_in sa;
-    struct sockaddr_in6 sa6;
 
     if (inet_pton(AF_INET, ipAddress, &(sa.sin_addr)) == 1) {
         *pFamily = AF_INET;
         return S_OK;
     }
+
+    struct sockaddr_in6 sa6;
 
     if (inet_pton(AF_INET6, ipAddress, &(sa6.sin6_addr)) == 1) {
         *pFamily = AF_INET6;
@@ -187,18 +188,25 @@ HRESULT IPFunctions::GetIpVersion(IN PCSTR ipAddress, OUT INT* pFamily)
     return E_INVALIDARG;
 }
 
-HRESULT IPFunctions::StringToPSOCK(IN PCSTR string, IN INT family, OUT PSOCKADDR* ppOutAddr)
+HRESULT IPFunctions::StringToPSOCK(IN IHttpContext* pHttpContext, IN PCSTR string, IN INT family, OUT PSOCKADDR* ppOutAddr)
 {
+    *ppOutAddr = nullptr;
+
+    if (string == nullptr || pHttpContext == nullptr || ppOutAddr == nullptr)
+    {
+        return E_INVALIDARG;
+    }
+
     if (family == AF_INET)
     {
-        PSOCKADDR pSockAddr = (PSOCKADDR)malloc(sizeof(struct sockaddr_in));
+        PSOCKADDR pSockAddr = (PSOCKADDR)pHttpContext->AllocateRequestMemory(sizeof(struct sockaddr_in));
 
         if (pSockAddr == nullptr)
         {
-            return E_OUTOFMEMORY; // failed to allocate memory
+            return E_OUTOFMEMORY;
         }
 
-        // Zero out the structure (important for safety?)
+        // Zero out the structure.
         ZeroMemory(pSockAddr, sizeof(struct sockaddr_in));
 
         ((struct sockaddr_in*)pSockAddr)->sin_family = AF_INET;
@@ -206,8 +214,6 @@ HRESULT IPFunctions::StringToPSOCK(IN PCSTR string, IN INT family, OUT PSOCKADDR
         // Convert the IP address string into the sockaddr_in structure
         if (inet_pton(AF_INET, string, &(((struct sockaddr_in*)pSockAddr)->sin_addr)) != 1)
         {
-            // If inet_pton fails, free memory and return
-            free(pSockAddr);
             return E_FAIL;
         }
         *ppOutAddr = pSockAddr;
@@ -215,7 +221,7 @@ HRESULT IPFunctions::StringToPSOCK(IN PCSTR string, IN INT family, OUT PSOCKADDR
     }
     else if (family == AF_INET6)
     {
-        PSOCKADDR pSockAddr = (PSOCKADDR)malloc(sizeof(struct sockaddr_in6));
+        PSOCKADDR pSockAddr = (PSOCKADDR)pHttpContext->AllocateRequestMemory(sizeof(struct sockaddr_in6));
         if (pSockAddr == nullptr)
         {
             return E_OUTOFMEMORY;
@@ -226,7 +232,6 @@ HRESULT IPFunctions::StringToPSOCK(IN PCSTR string, IN INT family, OUT PSOCKADDR
 
         if (inet_pton(AF_INET6, string, &(((struct sockaddr_in6*)pSockAddr)->sin6_addr)) != 1)
         {
-            free(pSockAddr);
             return E_FAIL;
         }
         *ppOutAddr = pSockAddr;

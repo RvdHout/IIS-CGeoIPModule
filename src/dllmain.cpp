@@ -17,78 +17,131 @@
 #include "RulesStruct.h"
 #include "Functions.h"
 #include "IPFunctions.h"
+#include "GeoFunctions.h"
+#include <atomic>
+#include <shared_mutex>
 
 IHttpServer* g_pHttpServer = NULL;
 PVOID g_pModuleContext = NULL;
+MMDB_s g_mmdb;
+std::vector<ExceptionRules> g_rules;
+std::atomic<bool> g_reloadNeeded = false;
+std::atomic<bool> isInitialized = false;
+std::shared_mutex initMutex;
 
 // Create the module class.
 class CGeoIPModule : public CHttpModule
 {
 public:
+
     REQUEST_NOTIFICATION_STATUS
         OnBeginRequest(
             IN IHttpContext* pHttpContext,
             IN IHttpEventProvider* pProvider
         )
     {
-        UNREFERENCED_PARAMETER(pProvider);
         IHttpRequest* pHttpRequest = pHttpContext->GetRequest();
         PSOCKADDR pSockAddr = pHttpRequest->GetRemoteAddress();
         Functions myFunctions;
+        GeoFunctions geoFunctions;
         IPFunctions ipFunctions;
-        BOOL checkedRemoteAddr = FALSE;
 
-        if (!myFunctions.GetIsEnabled(pHttpContext))
+        // get config at start of request, use it through the life of the request.
+        // avoids calling GetConfig repeatedly within functions, 5-10% efficency gain.
+        IAppHostElement* pModuleElement = nullptr;
+        HRESULT hr = myFunctions.GetConfig(pHttpContext, &pModuleElement);
+        if (FAILED(hr)) {
+#ifdef _DEBUG
+            char message[256];
+            _com_error err(hr);
+            myFunctions.WriteFileLogMessage(CStringA(err.ErrorMessage()));
+            sprintf_s(message, sizeof(message), "Failed to retreive configuration. The following error occured. %s", CStringA(err.ErrorMessage()).GetString());
+            myFunctions.WriteFileLogMessage(message);
+#endif
+            pProvider->SetErrorStatus(hr);
+            myFunctions.DenyAction(pHttpContext, NULL);
+            return RQ_NOTIFICATION_FINISH_REQUEST;
+        }
+
+        if (!myFunctions.GetIsEnabled(pHttpContext, pModuleElement))
         {
 #ifdef _DEBUG
             myFunctions.WriteFileLogMessage("Module disabled");
 #endif
+            pModuleElement->Release();
             return RQ_NOTIFICATION_CONTINUE;
         }
 
         // Perhaps you are using a module like CloudflareProxyTrust and need to base it off the actual value of REMOTE_ADDR?
-        if (myFunctions.CheckRemoteAddr(pHttpContext))
+        if (myFunctions.CheckRemoteAddr(pModuleElement))
         {
             DWORD val;
             PCWSTR remoteAddr;
-            HRESULT hr = pHttpContext->GetServerVariable("REMOTE_ADDR", &remoteAddr, &val);
-            if (SUCCEEDED(hr)) {
-                _bstr_t b(remoteAddr);
-                PCSTR pcstrRemoteAddr = b;
+            hr = pHttpContext->GetServerVariable("REMOTE_ADDR", &remoteAddr, &val);
+            if (FAILED(hr)) {
+                pProvider->SetErrorStatus(hr);
+                pModuleElement->Release();
+                return RQ_NOTIFICATION_FINISH_REQUEST;
+            }
+
+            _bstr_t b(remoteAddr);
+            PCSTR pcstrRemoteAddr = b;
 #ifdef _DEBUG
-                myFunctions.WriteFileLogMessage("Checking REMOTE_ADDR variable instead");
-                myFunctions.WriteFileLogMessage(pcstrRemoteAddr);
+            myFunctions.WriteFileLogMessage("Checking REMOTE_ADDR variable instead");
+            myFunctions.WriteFileLogMessage(pcstrRemoteAddr);
 #endif
-                INT family;
-                hr = ipFunctions.GetIpVersion(pcstrRemoteAddr, &family);
-                if (SUCCEEDED(hr)) {
-                    hr = ipFunctions.StringToPSOCK(pcstrRemoteAddr, family, &pSockAddr);
-                    if (SUCCEEDED(hr)) {
-                        checkedRemoteAddr = TRUE;
-                    }
+            INT family;
+            hr = ipFunctions.GetIpVersion(pcstrRemoteAddr, &family);
+            if (FAILED(hr)) {
+                pProvider->SetErrorStatus(hr);
+                pModuleElement->Release();
+                return RQ_NOTIFICATION_FINISH_REQUEST;
+            }
+
+            hr = ipFunctions.StringToPSOCK(pHttpContext, pcstrRemoteAddr, family, &pSockAddr);
+            if (FAILED(hr)) {
+                pProvider->SetErrorStatus(hr);
+                pModuleElement->Release();
+                return RQ_NOTIFICATION_FINISH_REQUEST;
+            }
+
+        }
+
+        if (!isInitialized || g_reloadNeeded)
+        {
+            std::lock_guard<std::shared_mutex> lock(initMutex);
+            if (!isInitialized || g_reloadNeeded)
+            {
+                // Load configuration from pHttpContext
+                HRESULT hr = geoFunctions.LoadMMDB(pHttpContext, pModuleElement);
+                if (FAILED(hr)) {
+                    pProvider->SetErrorStatus(hr);
+                    pModuleElement->Release();
+                    return RQ_NOTIFICATION_FINISH_REQUEST;
                 }
+                g_rules = myFunctions.exceptionRules(pHttpContext, pModuleElement);
+                isInitialized = true;
             }
         }
-        // get exception rules from config, return only matching family
-        const std::vector<ExceptionRules> rules = myFunctions.exceptionRules(pHttpContext, pSockAddr);
+
         // check exception rules
         BOOL allowed = FALSE;
-        if (ipFunctions.isIpInExceptionRules(pSockAddr, rules, &allowed))
+        if (ipFunctions.isIpInExceptionRules(pSockAddr, g_rules, &allowed))
         {
             if (allowed)
             {
 #ifdef _DEBUG
                 myFunctions.WriteFileLogMessage("IP allowed by exception rule");
 #endif
-                if (checkedRemoteAddr) free(pSockAddr);
+                pModuleElement->Release();
                 return RQ_NOTIFICATION_CONTINUE;
             }
             else {
 #ifdef _DEBUG
                 myFunctions.WriteFileLogMessage("IP denied by exception rule");
 #endif
-                myFunctions.DenyAction(pHttpContext);
-                if (checkedRemoteAddr) free(pSockAddr);
+                myFunctions.DenyAction(pHttpContext, pModuleElement);
+                pModuleElement->Release();
                 return RQ_NOTIFICATION_FINISH_REQUEST;
             }
         }
@@ -105,28 +158,22 @@ public:
 #ifdef _DEBUG
             myFunctions.WriteFileLogMessage("address is local");
 #endif
-            strcpy_s(countryCode, "ZZ");
+            strcpy_s(countryCode, 3, "ZZ");
         }
 
-        BOOL mode = myFunctions.GetAllowMode(pHttpContext);
+        BOOL mode = myFunctions.GetAllowMode(pHttpContext, pModuleElement);
         REQUEST_NOTIFICATION_STATUS reqStatus;
 
         // Get country code for this address, if it has not been set
         if (countryCode[0] == '\0')
         {
-            CHAR* mmdbPath = myFunctions.GetMMDBPath(pHttpContext);
-#ifdef _DEBUG
-            myFunctions.WriteFileLogMessage(mmdbPath);
-#endif
-            HRESULT hr = myFunctions.GetCountryCode(pSockAddr, mmdbPath, countryCode);
-            delete[] mmdbPath;
+            geoFunctions.GetCountryCode(pSockAddr, countryCode);
         }
-        LPCWSTR wCountryCode = myFunctions.convertCharArrayToLPCWSTR(countryCode, 3);
+        LPCWSTR wCountryCode = myFunctions.charToWString(pHttpContext, countryCode, 3);
         pHttpContext->SetServerVariable("GEOIP_COUNTRY", wCountryCode);
-        delete[] wCountryCode;
 
         // check the retrieved country code
-        if (myFunctions.CheckCountryCode(pHttpContext, countryCode, mode))
+        if (myFunctions.CheckCountryCode(pHttpContext, countryCode, mode, pModuleElement))
         {
 #ifdef _DEBUG
             myFunctions.WriteFileLogMessage("CountryCode allowed");
@@ -137,11 +184,11 @@ public:
 #ifdef _DEBUG
             myFunctions.WriteFileLogMessage("CountryCode denied");
 #endif
-            myFunctions.DenyAction(pHttpContext);
+            myFunctions.DenyAction(pHttpContext, pModuleElement);
             reqStatus = RQ_NOTIFICATION_FINISH_REQUEST;
         }
 
-        if(checkedRemoteAddr) free(pSockAddr);
+        pModuleElement->Release();
         return reqStatus;
     }
 };
@@ -173,6 +220,7 @@ public:
     void Terminate()
     {
         delete this;
+        MMDB_close(&g_mmdb);
     }
 };
 

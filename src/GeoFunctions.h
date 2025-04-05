@@ -10,36 +10,26 @@
  *                                              |___/
  */
 #define WIN32_LEAN_AND_MEAN
-#include <string>
+#include "Functions.h"
 #include <httpserv.h>
-#include <vector>
-#include <cstdlib> // For atoi
-#include <stdexcept> // For std::stoi
-#include "RulesStruct.h"
-#include <chrono>
-#include <cstring>
-#include <WS2tcpip.h>
+#include <comdef.h> // for _com_error and _bstr_t
+#include <maxminddb.h>
+#include <atomic>
 
-#pragma comment(lib, "WS2_32")
+#pragma comment(lib, "maxminddb.lib")
+
+extern std::atomic<bool> g_reloadNeeded;
+extern MMDB_s g_mmdb;
 
 /// <summary>
-/// provides methods for handling addresses
+/// This class provides methods for interacting with the GeoIP database.
 /// </summary>
-class IPFunctions
+class GeoFunctions
 {
 public:
-    BOOL IsLocalAddress(PSOCKADDR pSockAddr);
+    CHAR* GetMMDBPath(IN IHttpContext* pHttpContext, IN IAppHostElement* pModuleElement);
 
-    BOOL isIpInExceptionRules(PSOCKADDR pSockAddr, const std::vector<ExceptionRules>& rules, BOOL* pAllowed);
+    HRESULT LoadMMDB(IN IHttpContext* pHttpContext, IN IAppHostElement* pModuleElement);
 
-    HRESULT GetIpVersion(IN PCSTR ipAddress, OUT INT* pFamily);
-
-    HRESULT StringToPSOCK(IN IHttpContext* pHttpContext, IN PCSTR string, IN INT family, OUT PSOCKADDR* ppOutAddr);
-
-private:
-    VOID GenerateIpv6Mask(int prefixLength, struct in6_addr* mask);
-
-    BOOL IsIpv6InSubnet(struct in6_addr* addr, struct in6_addr* subnet, struct in6_addr* mask);
-
-    BOOL IsIpv4InSubnet(DWORD ip, DWORD subnet, DWORD mask);
+    HRESULT GetCountryCode(IN PSOCKADDR IP, OUT CHAR* COUNTRYCODE);
 };

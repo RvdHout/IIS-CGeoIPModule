@@ -10,55 +10,58 @@
  *                                              |___/
  */
 #define WIN32_LEAN_AND_MEAN
+#pragma once
 #include <httpserv.h>
 #include <vector>
 #include <string>
-#include <maxminddb.h>
 #include <chrono>
 #include <comdef.h> // for _com_error and _bstr_t
+#include <atlbase.h>  // For CComPtr
 #ifdef _DEBUG
 #include <atlstr.h>
 #endif
 #include "RulesStruct.h"
 
-#pragma comment(lib, "WS2_32")
-#pragma comment(lib, "maxminddb.lib")
-
 extern IHttpServer* g_pHttpServer;
 
+/// <summary>
+/// This class provides methods for retreiving configuration items
+/// </summary>
 class Functions
 {
 public:
     static HRESULT GetConfig(IN IHttpContext* pHttpContext, OUT IAppHostElement** ppElement);
 
-    BOOL IsCountryCodeListed(IN IHttpContext* pHttpContext, IN BSTR CountryCode);
+    HRESULT GetStringPropertyValueFromElement(IAppHostElement* pElement, BSTR pszElementName, BSTR* pStringValue);
 
-    BOOL GetIsEnabled(IN IHttpContext* pW3Context);
+    HRESULT GetBooleanPropertyValueFromElement(IAppHostElement* pElement, BSTR pszElementName, BOOL* pBoolValue);
 
-    BOOL CheckRemoteAddr(IN IHttpContext* pHttpContext);
+    BOOL IsCountryCodeListed(IN IHttpContext* pHttpContext, IN BSTR CountryCode, IN IAppHostElement* pModuleElement);
 
-    CHAR* GetMMDBPath(IN IHttpContext* pW3Context);
+    BOOL GetIsEnabled(IN IHttpContext* pW3Context, IN IAppHostElement* pModuleElement);
 
-    HRESULT GetCountryCode(IN PSOCKADDR IP, IN CHAR* MMDB_PATH, OUT CHAR* COUNTRYCODE);
+    HRESULT GetSiteId(IN IHttpContext* pHttpContext, OUT PCWSTR* str);
 
-    BOOL CheckCountryCode(IN IHttpContext* pHttpContext, IN CHAR* COUNTRYCODE, IN BOOL MODE);
+    BOOL CheckRemoteAddr(IN IAppHostElement* pModuleElement);
 
-    VOID DenyAction(IN IHttpContext* pHttpContext);
+    BOOL CheckCountryCode(IN IHttpContext* pHttpContext, IN CHAR* COUNTRYCODE, IN BOOL MODE, IN IAppHostElement* pModuleElement);
 
-    BOOL GetAllowMode(IN IHttpContext* pW3Context);
+    VOID DenyAction(IN IHttpContext* pHttpContext, IN IAppHostElement* pModuleElement);
 
-    std::vector<ExceptionRules> exceptionRules(IN IHttpContext* pHttpContext, IN PSOCKADDR pAddress);
+    BOOL GetAllowMode(IN IHttpContext* pW3Context, IN IAppHostElement* pModuleElement);
 
-    wchar_t* convertCharArrayToLPCWSTR(IN const char* charArray, IN int length);
+    std::vector<ExceptionRules> exceptionRules(IN IHttpContext* pHttpContext, IN IAppHostElement* pModuleElement);
 
-    char* BSTRToCharArray(IN BSTR bstr);
+    LPWSTR charToWString(IN IHttpContext* pHttpContext, IN LPCSTR charArray, IN int length);
+
+    LPSTR BSTRToCharArray(IN IHttpContext* pHttpContext, IN BSTR bstr);
 
 #ifdef _DEBUG
-    CHAR* PSOCKADDRtoString(IN PSOCKADDR pSockAddr);
+    LPSTR PSOCKADDRtoString(IN PSOCKADDR pSockAddr);
 
-    char* FormatStringPSOCKADDR(IN const char* string, IN PSOCKADDR pSockAddr);
+    LPSTR FormatStringPSOCKADDR(IN LPCSTR string, IN PSOCKADDR pSockAddr);
 
-    static VOID WriteFileLogMessage(IN const char* szMsg);
+    static VOID WriteFileLogMessage(IN LPCSTR szMsg);
 #endif
 
 };
