@@ -79,3 +79,14 @@ Statistics        Avg      Stdev        Max
     others - 0
   Throughput:     9.17MB/s
 ```
+
+The dev branch has some performance improvements, though stability has not been verified.
+```
+Statistics        Avg      Stdev        Max
+  Reqs/sec      9776.10     200.54   10107.25
+  Latency       12.77ms     0.95ms    94.00ms
+  HTTP codes:
+    1xx - 0, 2xx - 97873, 3xx - 0, 4xx - 0, 5xx - 0
+    others - 0
+  Throughput:    16.84MB/s
+```
