@@ -72,10 +72,10 @@ Statistics        Avg      Stdev        Max
 C++ module
 ```
 Statistics        Avg      Stdev        Max
-  Reqs/sec      5507.09    1081.12   16498.01
-  Latency       22.77ms     2.33ms   113.10ms
+  Reqs/sec      9776.10     200.54   10107.25
+  Latency       12.77ms     0.95ms    94.00ms
   HTTP codes:
-    1xx - 0, 2xx - 54745, 3xx - 0, 4xx - 0, 5xx - 0
+    1xx - 0, 2xx - 97873, 3xx - 0, 4xx - 0, 5xx - 0
     others - 0
-  Throughput:     9.17MB/s
+  Throughput:    16.84MB/s
 ```
