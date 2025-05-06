@@ -132,7 +132,7 @@ namespace CGeoIPModule
             this.remoteAddrCB.AutoSize = true;
             this.remoteAddrCB.Left = 5;
             this.remoteAddrCB.Top = 35;
-            this.remoteAddrCB.Text = "Use REMOTE_ADDR Server variable";
+            this.remoteAddrCB.Text = "Use HTTP_X_FORWARDED_FOR Server variable";
             this.remoteAddrCB.CheckedChanged += new EventHandler(enabledCB_CheckedChanged);
 
             this.DenyActionL.AutoSize = true;
@@ -380,7 +380,7 @@ namespace CGeoIPModule
         void DisplayConfiguration()
         {
             enabledCB.Checked = this.moduleConfiguration.Enabled;
-            remoteAddrCB.Checked = this.moduleConfiguration.RemoteAddr;
+            remoteAddrCB.Checked = this.moduleConfiguration.UseServerVariable;
             for (int i = 0; i < comboBoxDenyAction.Items.Count; i++)
             {
                 ComboboxItem ci = (ComboboxItem)comboBoxDenyAction.Items[i];
@@ -444,7 +444,7 @@ namespace CGeoIPModule
             if (this.isValidDatabase)
             {
                 this.moduleConfiguration.Enabled = !string.IsNullOrEmpty(geoIpFilepathTB.Text.Trim()) && System.IO.File.Exists(geoIpFilepathTB.Text.Trim()) ? enabledCB.Checked : false;
-                this.moduleConfiguration.RemoteAddr = remoteAddrCB.Checked;
+                this.moduleConfiguration.UseServerVariable = remoteAddrCB.Checked;
                 this.moduleConfiguration.Action = (comboBoxDenyAction.SelectedItem as ComboboxItem).Value.ToString();
                 this.moduleConfiguration.AllowedMode = allowedRB.Checked;
                 this.moduleConfiguration.Path = geoIpFilepathTB.Text;

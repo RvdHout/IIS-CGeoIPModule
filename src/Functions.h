@@ -35,7 +35,7 @@ public:
 
     BOOL GetIsEnabled(IN IHttpContext* pW3Context);
 
-    BOOL CheckRemoteAddr(IN IHttpContext* pHttpContext);
+    BOOL CheckServerVariable(IN IHttpContext* pHttpContext);
 
     CHAR* GetMMDBPath(IN IHttpContext* pW3Context);
 

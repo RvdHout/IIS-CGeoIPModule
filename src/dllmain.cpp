@@ -36,7 +36,7 @@ public:
         PSOCKADDR pSockAddr = pHttpRequest->GetRemoteAddress();
         Functions myFunctions;
         IPFunctions ipFunctions;
-        BOOL checkedRemoteAddr = FALSE;
+        BOOL checkedServerVariable = FALSE;
 
         if (!myFunctions.GetIsEnabled(pHttpContext))
         {
@@ -46,25 +46,25 @@ public:
             return RQ_NOTIFICATION_CONTINUE;
         }
 
-        // Perhaps you are using a module like CloudflareProxyTrust and need to base it off the actual value of REMOTE_ADDR?
-        if (myFunctions.CheckRemoteAddr(pHttpContext))
+        // Perhaps you are using a module like Application Request Routing and need to base it off the value of HTTP_X_FORWARDED_FOR?
+        if (myFunctions.CheckServerVariable(pHttpContext))
         {
             DWORD val;
-            PCWSTR remoteAddr;
-            HRESULT hr = pHttpContext->GetServerVariable("REMOTE_ADDR", &remoteAddr, &val);
+            PCWSTR serverVariable;
+            HRESULT hr = pHttpContext->GetServerVariable("HTTP_X_FORWARDED_FOR", &serverVariable, &val);
             if (SUCCEEDED(hr)) {
-                _bstr_t b(remoteAddr);
-                PCSTR pcstrRemoteAddr = b;
+                _bstr_t b(serverVariable);
+                PCSTR pcstrServerVariable = b;
 #ifdef _DEBUG
-                myFunctions.WriteFileLogMessage("Checking REMOTE_ADDR variable instead");
-                myFunctions.WriteFileLogMessage(pcstrRemoteAddr);
+                myFunctions.WriteFileLogMessage("Checking HTTP_X_FORWARDED_FOR variable instead");
+                myFunctions.WriteFileLogMessage(pcstrServerVariable);
 #endif
                 INT family;
-                hr = ipFunctions.GetIpVersion(pcstrRemoteAddr, &family);
+                hr = ipFunctions.GetIpVersion(pcstrServerVariable, &family);
                 if (SUCCEEDED(hr)) {
-                    hr = ipFunctions.StringToPSOCK(pcstrRemoteAddr, family, &pSockAddr);
+                    hr = ipFunctions.StringToPSOCK(pcstrServerVariable, family, &pSockAddr);
                     if (SUCCEEDED(hr)) {
-                        checkedRemoteAddr = TRUE;
+                        checkedServerVariable = TRUE;
                     }
                 }
             }
@@ -80,7 +80,7 @@ public:
 #ifdef _DEBUG
                 myFunctions.WriteFileLogMessage("IP allowed by exception rule");
 #endif
-                if (checkedRemoteAddr) free(pSockAddr);
+                if (checkedServerVariable) free(pSockAddr);
                 return RQ_NOTIFICATION_CONTINUE;
             }
             else {
@@ -88,7 +88,7 @@ public:
                 myFunctions.WriteFileLogMessage("IP denied by exception rule");
 #endif
                 myFunctions.DenyAction(pHttpContext);
-                if (checkedRemoteAddr) free(pSockAddr);
+                if (checkedServerVariable) free(pSockAddr);
                 return RQ_NOTIFICATION_FINISH_REQUEST;
             }
         }
@@ -141,7 +141,7 @@ public:
             reqStatus = RQ_NOTIFICATION_FINISH_REQUEST;
         }
 
-        if(checkedRemoteAddr) free(pSockAddr);
+        if(checkedServerVariable) free(pSockAddr);
         return reqStatus;
     }
 };

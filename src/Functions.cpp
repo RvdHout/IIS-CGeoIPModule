@@ -462,9 +462,9 @@ BOOL Functions::CheckCountryCode(IN IHttpContext* pHttpContext, IN CHAR* COUNTRY
         WriteFileLogMessage("mode=allow listed");
     }
 #endif
-    int wslen = MultiByteToWideChar(CP_ACP, 0, COUNTRYCODE, strlen(COUNTRYCODE), 0, 0);
+    int wslen = MultiByteToWideChar(CP_ACP, 0, COUNTRYCODE, (int)strlen(COUNTRYCODE), 0, 0);
     BSTR bstrCountryCode = SysAllocStringLen(0, wslen);
-    MultiByteToWideChar(CP_ACP, 0, COUNTRYCODE, strlen(COUNTRYCODE), bstrCountryCode, wslen);
+    MultiByteToWideChar(CP_ACP, 0, COUNTRYCODE, (int)strlen(COUNTRYCODE), bstrCountryCode, wslen);
 
     BOOL result = MODE ? FALSE : TRUE;
     if (IsCountryCodeListed(pHttpContext, bstrCountryCode)) {
@@ -544,16 +544,16 @@ BOOL Functions::GetIsEnabled(IN IHttpContext* pHttpContext)
 /// Get flag from config
 /// </summary>
 /// <param name="pHttpContext"></param>
-/// <returns>true if we should parse REMOTE_ADDR</returns>
-BOOL Functions::CheckRemoteAddr(IN IHttpContext* pHttpContext)
+/// <returns>true if we should parse HTTP_X_FORWARDED_FOR</returns>
+BOOL Functions::CheckServerVariable(IN IHttpContext* pHttpContext)
 {
-    BOOL checkRemoteAddr = FALSE;
+    BOOL checkServerVariable = FALSE;
     IAppHostElement* pElement = NULL;
     HRESULT hr = GetConfig(pHttpContext, &pElement);
     if (FAILED(hr))
     {
 #ifdef _DEBUG
-        WriteFileLogMessage("[Functions::CheckRemoteAddr]: GetConfig failed");
+        WriteFileLogMessage("[Functions::CheckServerVariable]: GetConfig failed");
         _com_error err(hr);
         LPCTSTR errMsg = err.ErrorMessage();
         WriteFileLogMessage(CStringA(errMsg));
@@ -561,11 +561,11 @@ BOOL Functions::CheckRemoteAddr(IN IHttpContext* pHttpContext)
         return FALSE;
     }
 
-    BSTR bstrRemoteAddr = SysAllocString(L"remoteAddr");
-    if (bstrRemoteAddr == NULL)
+    BSTR bstrServerVariable = SysAllocString(L"useServerVariable");
+    if (bstrServerVariable == NULL)
     {
 #ifdef _DEBUG
-        WriteFileLogMessage("[Functions::CheckRemoteAddr]: bstrRemoteAddr alloc failed");
+        WriteFileLogMessage("[Functions::CheckServerVariable]: bstrServerVariable alloc failed");
         _com_error err(hr);
         LPCTSTR errMsg = err.ErrorMessage();
         WriteFileLogMessage(CStringA(errMsg));
@@ -574,19 +574,19 @@ BOOL Functions::CheckRemoteAddr(IN IHttpContext* pHttpContext)
         return FALSE;
     }
 
-    hr = GetBooleanPropertyValueFromElement(pElement, bstrRemoteAddr, &checkRemoteAddr);
-    SysFreeString(bstrRemoteAddr);
+    hr = GetBooleanPropertyValueFromElement(pElement, bstrServerVariable, &checkServerVariable);
+    SysFreeString(bstrServerVariable);
     if (FAILED(hr))
     {
 #ifdef _DEBUG
-        WriteFileLogMessage("[Functions::CheckRemoteAddr]: GetBooleanPropertyValueFromElement failed");
+        WriteFileLogMessage("[Functions::CheckServerVariable]: GetBooleanPropertyValueFromElement failed");
         _com_error err(hr);
         LPCTSTR errMsg = err.ErrorMessage();
         WriteFileLogMessage(CStringA(errMsg));
 #endif
     }
     pElement->Release();
-    return checkRemoteAddr;
+    return checkServerVariable;
 }
 
 /// <summary>

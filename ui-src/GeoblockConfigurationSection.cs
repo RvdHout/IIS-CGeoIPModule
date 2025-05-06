@@ -49,12 +49,12 @@ namespace CGeoIPModule
         }
 
         /// <summary>
-        /// Specifies whether or not to use REMOTE_ADDR server variable to obtain client IP
+        /// Specifies whether or not to use HTTP_X_FORWARDED_FOR server variable to obtain client IP
         /// </summary>
-        public bool RemoteAddr
+        public bool UseServerVariable
         {
-            get { return (bool)base["remoteAddr"]; }
-            set { base["remoteAddr"] = (bool)value; }
+            get { return (bool)base["useServerVariable"]; }
+            set { base["useServerVariable"] = (bool)value; }
         }
 
         /// <summary>

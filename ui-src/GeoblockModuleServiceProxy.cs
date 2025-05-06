@@ -60,7 +60,7 @@ namespace CGeoIPModule
 #endif
 
             result.Enabled = (bool)config[0];
-            result.RemoteAddr = (bool)config[1];
+            result.UseServerVariable = (bool)config[1];
             result.Action = (string)config[2];
             result.Path = (string)config[3];
             result.AllowedMode = (bool)config[4];
@@ -96,7 +96,7 @@ namespace CGeoIPModule
         {
             PropertyBag config = new PropertyBag();
             config.Add(0, updatedGeoblockConfiguration.Enabled);
-            config.Add(1, updatedGeoblockConfiguration.RemoteAddr);
+            config.Add(1, updatedGeoblockConfiguration.UseServerVariable);
             config.Add(2, updatedGeoblockConfiguration.Action);
             config.Add(3, updatedGeoblockConfiguration.Path);
             config.Add(4, updatedGeoblockConfiguration.AllowedMode);

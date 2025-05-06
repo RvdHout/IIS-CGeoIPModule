@@ -38,9 +38,9 @@ namespace CGeoIPModule
         public bool Enabled { get; set; }
 
         /// <summary>
-        /// Specifies whether or not to use REMOTE_ADDR to obtain client ip
+        /// Specifies whether or not to use HTTP_X_FORWARDED_FOR to obtain client ip
         /// </summary>
-        public bool RemoteAddr { get; set; }
+        public bool UseServerVariable { get; set; }
 
         /// <summary>
         /// Specifies the Deny Action Type
